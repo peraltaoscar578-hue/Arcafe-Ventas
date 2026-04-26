@@ -3,216 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ventas del día</title>
+  <title>Arcafé — Ventas</title>
   <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#1a1a1a" />
+  <meta name="theme-color" content="#0d0d0d" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #f5f5f0;
-      color: #1a1a1a;
-      min-height: 100vh;
-      padding-bottom: 2rem;
+    :root {
+      --gold: #c9a84c;
+      --gold-light: #e2c07a;
+      --gold-dim: rgba(201,168,76,0.12);
+      --bg: #0d0d0d;
+      --bg2: #1a1a1a;
+      --bg3: #242424;
+      --border: rgba(201,168,76,0.2);
+      --text: #f0e8d8;
+      --text2: #9a8a70;
+      --danger: #c0392b;
     }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 3rem; }
 
-    header {
-      background: #1a1a1a;
-      color: #fff;
-      padding: 1rem 1.25rem;
-      position: sticky;
-      top: 0;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
+    header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.85rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
+    header img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold); flex-shrink: 0; }
+    .header-text h1 { font-size: 17px; font-weight: 700; color: var(--gold); letter-spacing: 0.03em; }
+    .header-text p { font-size: 11px; color: var(--text2); margin-top: 1px; }
 
-    header img { width: 48px; height: 48px; border-radius: 50%; object-fit: cover; flex-shrink: 0; }
-    header h1 { font-size: 18px; font-weight: 600; margin: 0; }
-    header p  { font-size: 12px; color: #c9a84c; margin-top: 2px; }
+    .summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 1rem; }
+    .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; }
+    .metric.highlight { background: var(--gold-dim); border-color: var(--gold); grid-column: span 2; display: flex; align-items: center; justify-content: space-between; }
+    .metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .metric-value { font-size: 24px; font-weight: 700; color: var(--text); }
+    .metric.highlight .metric-value { font-size: 28px; color: var(--gold); }
+    .metric-value.small { font-size: 14px; font-weight: 500; padding-top: 3px; }
 
-    .summary {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
-      padding: 1rem;
-    }
+    .section-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 1rem 0.6rem; }
 
-    .metric {
-      background: #fff;
-      border-radius: 12px;
-      padding: 0.75rem;
-      text-align: center;
-    }
+    .product-list { display: flex; flex-direction: column; gap: 8px; padding: 0 1rem; margin-bottom: 1.25rem; }
 
-    .metric-label {
-      font-size: 11px;
-      color: #888;
-      margin-bottom: 4px;
-    }
-
-    .metric-value {
-      font-size: 22px;
-      font-weight: 600;
-      color: #1a1a1a;
-    }
-
-    .metric-value.small { font-size: 13px; padding-top: 4px; }
-
-    .section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: #888;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      padding: 0 1rem 0.5rem;
-    }
-
-    .product-list {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      padding: 0 1rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .product-card {
-      background: #fff;
-      border-radius: 14px;
-      padding: 0.85rem 1rem;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
-
-    .product-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: #f0effe;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      flex-shrink: 0;
-    }
-
+    .product-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; }
+    .product-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
     .product-info { flex: 1; min-width: 0; }
-    .product-name {
-      font-size: 15px;
-      font-weight: 500;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .product-sub { font-size: 12px; color: #999; margin-top: 2px; }
+    .product-name { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text); }
+    .product-price { font-size: 12px; color: var(--gold); margin-top: 2px; cursor: pointer; }
+    .product-sub { font-size: 11px; color: var(--text2); margin-top: 1px; }
 
-    .controls {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-shrink: 0;
-    }
+    .controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+    .btn { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--border); background: var(--bg3); color: var(--gold); font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .btn:active { background: var(--gold-dim); transform: scale(0.93); }
+    .btn:disabled { opacity: 0.25; cursor: default; }
+    .count { font-size: 20px; font-weight: 700; min-width: 28px; text-align: center; color: var(--text); }
 
-    .btn {
-      width: 34px;
-      height: 34px;
-      border-radius: 50%;
-      border: 1.5px solid #ddd;
-      background: #f5f5f0;
-      color: #1a1a1a;
-      font-size: 18px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 500;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.1s;
-    }
+    .delete-btn { width: 28px; height: 28px; border-radius: 50%; border: 1px solid rgba(192,57,43,0.3); background: transparent; color: var(--danger); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.55; }
+    .delete-btn:active { opacity: 1; background: rgba(192,57,43,0.15); }
 
-    .btn:active { background: #e8e8e0; transform: scale(0.94); }
-    .btn:disabled { opacity: 0.3; cursor: default; }
+    .add-section { margin: 0 1rem 0.75rem; background: var(--bg2); border: 1px dashed var(--border); border-radius: 14px; padding: 0.85rem 1rem; }
+    .add-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+    .add-row:last-child { margin-bottom: 0; }
+    .add-input { flex: 1; border: none; background: var(--bg3); border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text); outline: none; font-family: inherit; }
+    .add-input::placeholder { color: var(--text2); }
+    .price-input { width: 100px; border: none; background: var(--bg3); border-radius: 8px; padding: 9px 10px; font-size: 14px; color: var(--gold); outline: none; font-family: inherit; }
+    .price-input::placeholder { color: var(--text2); }
+    .add-btn { background: var(--gold); color: #0d0d0d; border: none; border-radius: 10px; padding: 9px 16px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; }
+    .add-btn:active { opacity: 0.85; }
 
-    .count {
-      font-size: 20px;
-      font-weight: 600;
-      min-width: 30px;
-      text-align: center;
-    }
+    .reset-btn { display: block; margin: 0.5rem auto 0; background: transparent; border: 1px solid rgba(192,57,43,0.35); color: var(--danger); border-radius: 10px; padding: 9px 22px; font-size: 13px; cursor: pointer; font-family: inherit; opacity: 0.7; }
+    .reset-btn:active { opacity: 1; }
 
-    .add-section {
-      margin: 0 1rem 1rem;
-      background: #fff;
-      border-radius: 14px;
-      padding: 0.85rem 1rem;
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-    }
+    .empty { text-align: center; color: var(--text2); font-size: 14px; padding: 1.5rem; }
 
-    .add-input {
-      flex: 1;
-      border: none;
-      background: transparent;
-      font-size: 15px;
-      color: #1a1a1a;
-      outline: none;
-      font-family: inherit;
-    }
-
-    .add-input::placeholder { color: #bbb; }
-
-    .add-btn {
-      background: #1a1a1a;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: inherit;
-      white-space: nowrap;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .add-btn:active { opacity: 0.8; }
-
-    .reset-btn {
-      display: block;
-      margin: 0.5rem auto 0;
-      background: transparent;
-      border: 1.5px solid #ddd;
-      color: #999;
-      border-radius: 10px;
-      padding: 8px 20px;
-      font-size: 13px;
-      cursor: pointer;
-      font-family: inherit;
-    }
-
-    .reset-btn:active { background: #eee; }
-
-    .empty {
-      text-align: center;
-      color: #bbb;
-      font-size: 14px;
-      padding: 1rem;
-    }
+    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 100; align-items: flex-end; justify-content: center; }
+    .modal-bg.open { display: flex; }
+    .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem 2.5rem; width: 100%; max-width: 480px; }
+    .modal h3 { font-size: 16px; font-weight: 600; color: var(--gold); margin-bottom: 1rem; }
+    .modal-row { display: flex; gap: 8px; align-items: center; }
+    .modal input { flex: 1; border: 1px solid var(--border); background: var(--bg3); border-radius: 10px; padding: 10px 14px; font-size: 16px; color: var(--gold); outline: none; font-family: inherit; }
+    .modal-save { background: var(--gold); color: #0d0d0d; border: none; border-radius: 10px; padding: 10px 20px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .modal-cancel { display: block; margin: 0.75rem auto 0; background: transparent; border: none; color: var(--text2); font-size: 14px; cursor: pointer; font-family: inherit; }
   </style>
 </head>
 <body>
 
 <header>
-  <img src="logo.png" alt="Arcafé logo" />
-  <div>
+  <img src="logo.png" alt="Arcafé" />
+  <div class="header-text">
     <h1>Arcafé</h1>
     <p id="fecha"></p>
   </div>
@@ -220,16 +94,19 @@
 
 <div class="summary">
   <div class="metric">
-    <div class="metric-label">Total vendidos</div>
+    <div class="metric-label">Unidades vendidas</div>
     <div class="metric-value" id="total-unidades">0</div>
-  </div>
-  <div class="metric">
-    <div class="metric-label">Productos</div>
-    <div class="metric-value" id="total-productos">0</div>
   </div>
   <div class="metric">
     <div class="metric-label">Más vendido</div>
     <div class="metric-value small" id="top-producto">—</div>
+  </div>
+  <div class="metric highlight">
+    <div>
+      <div class="metric-label">Total del día</div>
+      <div class="metric-value" id="total-dinero">Bs. 0.00</div>
+    </div>
+    <span style="font-size:32px">☕</span>
   </div>
 </div>
 
@@ -237,37 +114,44 @@
 <div class="product-list" id="product-list"></div>
 
 <div class="add-section">
-  <input class="add-input" id="new-product" type="text" placeholder="Nuevo producto..." maxlength="40" />
-  <button class="add-btn" onclick="addProduct()">+ Agregar</button>
+  <div class="add-row">
+    <input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40" />
+    <input class="price-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs. precio" />
+  </div>
+  <div class="add-row">
+    <button class="add-btn" onclick="addProduct()">+ Agregar producto</button>
+  </div>
 </div>
 
 <button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
 
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <h3 id="modal-title">Editar precio</h3>
+    <div class="modal-row">
+      <input type="number" id="modal-price" min="0" step="0.5" placeholder="Precio en Bs." />
+      <button class="modal-save" onclick="savePrice()">Guardar</button>
+    </div>
+    <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
+  </div>
+</div>
+
 <script>
-  const ICONS = {
-    'Americano':'☕','Cappuccino':'☕','Latte':'🥛','Mocaccino':'🍫',
-    'Iced Latte':'🧊','Espresso':'☕','Frappé':'🧋','Chocolate caliente':'🍫',
-    'Té verde':'🍵','Matcha latte':'🍵'
-  };
-
-  const DEFAULT_PRODUCTS = [
-    'Americano','Cappuccino','Latte','Mocaccino',
-    'Iced Latte','Espresso','Frappé','Chocolate caliente'
+  const ICONS = {'Americano':'☕','Cappuccino':'☕','Latte':'🥛','Mocaccino':'🍫','Iced Latte':'🧊','Espresso':'☕','Frappé':'🧋','Chocolate caliente':'🍫','Té verde':'🍵','Matcha latte':'🍵'};
+  const DEFAULTS = [
+    {name:'Americano',price:15,count:0},{name:'Cappuccino',price:20,count:0},
+    {name:'Latte',price:20,count:0},{name:'Mocaccino',price:22,count:0},
+    {name:'Iced Latte',price:22,count:0},{name:'Espresso',price:12,count:0},
+    {name:'Frappé',price:25,count:0},{name:'Chocolate caliente',price:18,count:0},
   ];
-
-  const STORAGE_KEY = 'ventas_cafe_data';
+  const KEY = 'arcafe_ventas_v2';
+  let editingIndex = null;
 
   function loadData() {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) return JSON.parse(saved);
-    } catch(e) {}
-    return DEFAULT_PRODUCTS.map(name => ({ name, count: 0 }));
+    try { const s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {}
+    return DEFAULTS.map(p => ({...p}));
   }
-
-  function saveData() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); } catch(e) {}
-  }
+  function saveData() { try { localStorage.setItem(KEY, JSON.stringify(products)); } catch(e) {} }
 
   let products = loadData();
 
@@ -276,77 +160,91 @@
   function render() {
     const list = document.getElementById('product-list');
     const totalU = products.reduce((s,p) => s + p.count, 0);
+    const totalBs = products.reduce((s,p) => s + p.count * (p.price||0), 0);
     const top = [...products].sort((a,b) => b.count - a.count)[0];
 
     document.getElementById('total-unidades').textContent = totalU;
-    document.getElementById('total-productos').textContent = products.length;
+    document.getElementById('total-dinero').textContent = 'Bs. ' + totalBs.toFixed(2);
     document.getElementById('top-producto').textContent = top && top.count > 0 ? top.name : '—';
 
     list.innerHTML = '';
-    if (!products.length) {
-      list.innerHTML = '<p class="empty">Sin productos. Agrega uno abajo.</p>';
-      return;
-    }
+    if (!products.length) { list.innerHTML = '<p class="empty">Sin productos. Agrega uno abajo.</p>'; saveData(); return; }
 
     products.forEach((p, i) => {
-      const pct = totalU > 0 ? Math.round((p.count / totalU) * 100) : 0;
+      const pct = totalU > 0 ? Math.round(p.count/totalU*100) : 0;
+      const sub = (p.count*p.price).toFixed(2);
       const card = document.createElement('div');
       card.className = 'product-card';
       card.innerHTML = `
         <div class="product-icon">${getIcon(p.name)}</div>
         <div class="product-info">
           <div class="product-name">${p.name}</div>
-          <div class="product-sub">${p.count > 0 ? pct + '% del total' : 'Sin ventas aún'}</div>
+          <div class="product-price" onclick="openModal(${i})">
+            ${p.price > 0 ? 'Bs. '+p.price.toFixed(2)+' ✏️' : '+ Asignar precio'}
+          </div>
+          <div class="product-sub">${p.count > 0 ? pct+'% del total · Bs. '+sub : 'Sin ventas aún'}</div>
         </div>
         <div class="controls">
           <button class="btn" onclick="change(${i},-1)" ${p.count===0?'disabled':''}>−</button>
           <span class="count">${p.count}</span>
           <button class="btn" onclick="change(${i},1)">+</button>
         </div>
+        <button class="delete-btn" onclick="deleteProduct(${i})">✕</button>
       `;
       list.appendChild(card);
     });
-
     saveData();
   }
 
-  function change(i, delta) {
-    products[i].count = Math.max(0, products[i].count + delta);
-    render();
+  function change(i, delta) { products[i].count = Math.max(0, products[i].count + delta); render(); }
+
+  function deleteProduct(i) {
+    if (!confirm('¿Eliminar "' + products[i].name + '"?')) return;
+    products.splice(i, 1); render();
   }
 
   function addProduct() {
-    const input = document.getElementById('new-product');
-    const name = input.value.trim();
-    if (!name) return;
+    const nameEl = document.getElementById('new-name');
+    const priceEl = document.getElementById('new-price');
+    const name = nameEl.value.trim();
+    const price = parseFloat(priceEl.value) || 0;
+    if (!name) { nameEl.focus(); return; }
     if (products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
-      input.style.color = 'red';
-      setTimeout(() => input.style.color = '', 1000);
-      return;
+      nameEl.style.outline = '1px solid red'; setTimeout(() => nameEl.style.outline='', 1200); return;
     }
-    products.push({ name, count: 0 });
-    input.value = '';
-    render();
+    products.push({name, price, count:0});
+    nameEl.value = ''; priceEl.value = ''; render();
   }
+
+  function openModal(i) {
+    editingIndex = i;
+    document.getElementById('modal-title').textContent = 'Precio — ' + products[i].name;
+    document.getElementById('modal-price').value = products[i].price || '';
+    document.getElementById('modal-bg').classList.add('open');
+    setTimeout(() => document.getElementById('modal-price').focus(), 100);
+  }
+
+  function savePrice() {
+    if (editingIndex === null) return;
+    products[editingIndex].price = parseFloat(document.getElementById('modal-price').value) || 0;
+    closeModal(); render();
+  }
+
+  function closeModal() { document.getElementById('modal-bg').classList.remove('open'); editingIndex = null; }
 
   function resetAll() {
     if (!confirm('¿Reiniciar todas las cantidades a 0?')) return;
-    products.forEach(p => p.count = 0);
-    render();
+    products.forEach(p => p.count = 0); render();
   }
 
-  document.getElementById('new-product').addEventListener('keydown', e => {
-    if (e.key === 'Enter') addProduct();
-  });
+  document.getElementById('new-name').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('new-price').focus(); });
+  document.getElementById('new-price').addEventListener('keydown', e => { if(e.key==='Enter') addProduct(); });
+  document.getElementById('modal-price').addEventListener('keydown', e => { if(e.key==='Enter') savePrice(); });
+  document.getElementById('modal-bg').addEventListener('click', e => { if(e.target.id==='modal-bg') closeModal(); });
 
-  const now = new Date();
-  document.getElementById('fecha').textContent = now.toLocaleDateString('es-BO', {
-    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-  });
+  document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-BO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
 
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
-  }
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 
   render();
 </script>
