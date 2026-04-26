@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ventas del día</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1a1a1a" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      min-height: 100vh;
+      padding-bottom: 2rem;
+    }
+
+    header {
+      background: #1a1a1a;
+      color: #fff;
+      padding: 1.25rem 1.25rem 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    header h1 { font-size: 18px; font-weight: 600; }
+    header p  { font-size: 12px; color: #aaa; margin-top: 2px; }
+
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      padding: 1rem;
+    }
+
+    .metric {
+      background: #fff;
+      border-radius: 12px;
+      padding: 0.75rem;
+      text-align: center;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 22px;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    .metric-value.small { font-size: 13px; padding-top: 4px; }
+
+    .section-title {
+      font-size: 12px;
+      font-weight: 600;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0 1rem 0.5rem;
+    }
+
+    .product-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 0 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .product-card {
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .product-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #f0effe;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .product-info { flex: 1; min-width: 0; }
+    .product-name {
+      font-size: 15px;
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .product-sub { font-size: 12px; color: #999; margin-top: 2px; }
+
+    .controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1.5px solid #ddd;
+      background: #f5f5f0;
+      color: #1a1a1a;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+
+    .btn:active { background: #e8e8e0; transform: scale(0.94); }
+    .btn:disabled { opacity: 0.3; cursor: default; }
+
+    .count {
+      font-size: 20px;
+      font-weight: 600;
+      min-width: 30px;
+      text-align: center;
+    }
+
+    .add-section {
+      margin: 0 1rem 1rem;
+      background: #fff;
+      border-radius: 14px;
+      padding: 0.85rem 1rem;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+
+    .add-input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-size: 15px;
+      color: #1a1a1a;
+      outline: none;
+      font-family: inherit;
+    }
+
+    .add-input::placeholder { color: #bbb; }
+
+    .add-btn {
+      background: #1a1a1a;
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .add-btn:active { opacity: 0.8; }
+
+    .reset-btn {
+      display: block;
+      margin: 0.5rem auto 0;
+      background: transparent;
+      border: 1.5px solid #ddd;
+      color: #999;
+      border-radius: 10px;
+      padding: 8px 20px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .reset-btn:active { background: #eee; }
+
+    .empty {
+      text-align: center;
+      color: #bbb;
+      font-size: 14px;
+      padding: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>☕ Ventas del día</h1>
+  <p id="fecha"></p>
+</header>
+
+<div class="summary">
+  <div class="metric">
+    <div class="metric-label">Total vendidos</div>
+    <div class="metric-value" id="total-unidades">0</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Productos</div>
+    <div class="metric-value" id="total-productos">0</div>
+  </div>
+  <div class="metric">
+    <div class="metric-label">Más vendido</div>
+    <div class="metric-value small" id="top-producto">—</div>
+  </div>
+</div>
+
+<p class="section-title">Productos</p>
+<div class="product-list" id="product-list"></div>
+
+<div class="add-section">
+  <input class="add-input" id="new-product" type="text" placeholder="Nuevo producto..." maxlength="40" />
+  <button class="add-btn" onclick="addProduct()">+ Agregar</button>
+</div>
+
+<button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
+
+<script>
+  const ICONS = {
+    'Americano':'☕','Cappuccino':'☕','Latte':'🥛','Mocaccino':'🍫',
+    'Iced Latte':'🧊','Espresso':'☕','Frappé':'🧋','Chocolate caliente':'🍫',
+    'Té verde':'🍵','Matcha latte':'🍵'
+  };
+
+  const DEFAULT_PRODUCTS = [
+    'Americano','Cappuccino','Latte','Mocaccino',
+    'Iced Latte','Espresso','Frappé','Chocolate caliente'
+  ];
+
+  const STORAGE_KEY = 'ventas_cafe_data';
+
+  function loadData() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return JSON.parse(saved);
+    } catch(e) {}
+    return DEFAULT_PRODUCTS.map(name => ({ name, count: 0 }));
+  }
+
+  function saveData() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); } catch(e) {}
+  }
+
+  let products = loadData();
+
+  function getIcon(name) { return ICONS[name] || '☕'; }
+
+  function render() {
+    const list = document.getElementById('product-list');
+    const totalU = products.reduce((s,p) => s + p.count, 0);
+    const top = [...products].sort((a,b) => b.count - a.count)[0];
+
+    document.getElementById('total-unidades').textContent = totalU;
+    document.getElementById('total-productos').textContent = products.length;
+    document.getElementById('top-producto').textContent = top && top.count > 0 ? top.name : '—';
+
+    list.innerHTML = '';
+    if (!products.length) {
+      list.innerHTML = '<p class="empty">Sin productos. Agrega uno abajo.</p>';
+      return;
+    }
+
+    products.forEach((p, i) => {
+      const pct = totalU > 0 ? Math.round((p.count / totalU) * 100) : 0;
+      const card = document.createElement('div');
+      card.className = 'product-card';
+      card.innerHTML = `
+        <div class="product-icon">${getIcon(p.name)}</div>
+        <div class="product-info">
+          <div class="product-name">${p.name}</div>
+          <div class="product-sub">${p.count > 0 ? pct + '% del total' : 'Sin ventas aún'}</div>
+        </div>
+        <div class="controls">
+          <button class="btn" onclick="change(${i},-1)" ${p.count===0?'disabled':''}>−</button>
+          <span class="count">${p.count}</span>
+          <button class="btn" onclick="change(${i},1)">+</button>
+        </div>
+      `;
+      list.appendChild(card);
+    });
+
+    saveData();
+  }
+
+  function change(i, delta) {
+    products[i].count = Math.max(0, products[i].count + delta);
+    render();
+  }
+
+  function addProduct() {
+    const input = document.getElementById('new-product');
+    const name = input.value.trim();
+    if (!name) return;
+    if (products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
+      input.style.color = 'red';
+      setTimeout(() => input.style.color = '', 1000);
+      return;
+    }
+    products.push({ name, count: 0 });
+    input.value = '';
+    render();
+  }
+
+  function resetAll() {
+    if (!confirm('¿Reiniciar todas las cantidades a 0?')) return;
+    products.forEach(p => p.count = 0);
+    render();
+  }
+
+  document.getElementById('new-product').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addProduct();
+  });
+
+  const now = new Date();
+  document.getElementById('fecha').textContent = now.toLocaleDateString('es-BO', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+
+  render();
+</script>
+</body>
+</html>
