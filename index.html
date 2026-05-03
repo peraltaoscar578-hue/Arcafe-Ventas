@@ -22,14 +22,58 @@
       --danger: #c0392b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding-bottom: 3rem; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.85rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
-    header img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold); flex-shrink: 0; }
-    .header-text h1 { font-size: 17px; font-weight: 700; color: var(--gold); letter-spacing: 0.03em; }
+    /* ── LOCATION PICKER ── */
+    #screen-picker {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 2rem 1.5rem; text-align: center;
+    }
+    #screen-picker img { width: 110px; height: 110px; border-radius: 50%; border: 2px solid var(--gold); object-fit: cover; margin-bottom: 1.5rem; }
+    #screen-picker h1 { font-size: 26px; font-weight: 800; color: var(--gold); letter-spacing: 0.04em; margin-bottom: 4px; }
+    #screen-picker p { font-size: 13px; color: var(--text2); margin-bottom: 2.5rem; }
+    .picker-title { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text2); margin-bottom: 1rem; }
+    .location-btn {
+      width: 100%; max-width: 320px; background: var(--bg2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.1rem 1.5rem; margin-bottom: 12px;
+      display: flex; align-items: center; gap: 14px; cursor: pointer; text-align: left;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .location-btn:active { background: var(--gold-dim); border-color: var(--gold); }
+    .location-icon { font-size: 28px; flex-shrink: 0; }
+    .location-name { font-size: 16px; font-weight: 700; color: var(--text); }
+    .location-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+
+    /* ── MAIN APP ── */
+    #screen-app { display: none; padding-bottom: 3rem; }
+
+    header {
+      background: var(--bg); border-bottom: 1px solid var(--border);
+      padding: 0.85rem 1.25rem; position: sticky; top: 0; z-index: 10;
+      display: flex; align-items: center; gap: 12px;
+    }
+    header img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--gold); flex-shrink: 0; }
+    .header-text { flex: 1; }
+    .header-text h1 { font-size: 16px; font-weight: 700; color: var(--gold); }
     .header-text p { font-size: 11px; color: var(--text2); margin-top: 1px; }
+    .switch-btn {
+      background: var(--bg3); border: 1px solid var(--border); border-radius: 10px;
+      padding: 6px 12px; font-size: 12px; color: var(--text2); cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .switch-btn:active { background: var(--gold-dim); color: var(--gold); }
 
-    .summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 1rem; }
+    /* location badge */
+    .loc-badge {
+      margin: 0.75rem 1rem 0;
+      background: var(--gold-dim); border: 1px solid var(--border);
+      border-radius: 10px; padding: 6px 12px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .loc-badge span { font-size: 18px; }
+    .loc-badge p { font-size: 13px; font-weight: 600; color: var(--gold); }
+
+    .summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0.75rem 1rem 1rem; }
     .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; }
     .metric.highlight { background: var(--gold-dim); border-color: var(--gold); grid-column: span 2; display: flex; align-items: center; justify-content: space-between; }
     .metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
@@ -40,7 +84,6 @@
     .section-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 1rem 0.6rem; }
 
     .product-list { display: flex; flex-direction: column; gap: 8px; padding: 0 1rem; margin-bottom: 1.25rem; }
-
     .product-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; display: flex; align-items: center; gap: 10px; }
     .product-icon { width: 38px; height: 38px; border-radius: 50%; background: var(--gold-dim); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 17px; flex-shrink: 0; }
     .product-info { flex: 1; min-width: 0; }
@@ -84,47 +127,81 @@
 </head>
 <body>
 
-<header>
+<!-- ── LOCATION PICKER ── -->
+<div id="screen-picker">
   <img src="logo.png" alt="Arcafé" />
-  <div class="header-text">
-    <h1>Arcafé</h1>
-    <p id="fecha"></p>
-  </div>
-</header>
+  <h1>Arcafé</h1>
+  <p>Café al Paso Premium</p>
+  <p class="picker-title">Selecciona el local</p>
 
-<div class="summary">
-  <div class="metric">
-    <div class="metric-label">Unidades vendidas</div>
-    <div class="metric-value" id="total-unidades">0</div>
-  </div>
-  <div class="metric">
-    <div class="metric-label">Más vendido</div>
-    <div class="metric-value small" id="top-producto">—</div>
-  </div>
-  <div class="metric highlight">
+  <button class="location-btn" onclick="selectLocation('aeropuerto')">
+    <span class="location-icon">✈️</span>
     <div>
-      <div class="metric-label">Total del día</div>
-      <div class="metric-value" id="total-dinero">Bs. 0.00</div>
+      <div class="location-name">Aeropuerto</div>
+      <div class="location-sub">Registro de ventas</div>
     </div>
-    <span style="font-size:32px">☕</span>
-  </div>
+  </button>
+
+  <button class="location-btn" onclick="selectLocation('teleferico')">
+    <span class="location-icon">🚡</span>
+    <div>
+      <div class="location-name">Teleférico Morado</div>
+      <div class="location-sub">Registro de ventas</div>
+    </div>
+  </button>
 </div>
 
-<p class="section-title">Productos</p>
-<div class="product-list" id="product-list"></div>
+<!-- ── MAIN APP ── -->
+<div id="screen-app">
+  <header>
+    <img src="logo.png" alt="Arcafé" />
+    <div class="header-text">
+      <h1>Arcafé</h1>
+      <p id="fecha"></p>
+    </div>
+    <button class="switch-btn" onclick="goBack()">⇄ Cambiar local</button>
+  </header>
 
-<div class="add-section">
-  <div class="add-row">
-    <input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40" />
-    <input class="price-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs. precio" />
+  <div class="loc-badge">
+    <span id="loc-icon"></span>
+    <p id="loc-name"></p>
   </div>
-  <div class="add-row">
-    <button class="add-btn" onclick="addProduct()">+ Agregar producto</button>
+
+  <div class="summary">
+    <div class="metric">
+      <div class="metric-label">Unidades vendidas</div>
+      <div class="metric-value" id="total-unidades">0</div>
+    </div>
+    <div class="metric">
+      <div class="metric-label">Más vendido</div>
+      <div class="metric-value small" id="top-producto">—</div>
+    </div>
+    <div class="metric highlight">
+      <div>
+        <div class="metric-label">Total del día</div>
+        <div class="metric-value" id="total-dinero">Bs. 0.00</div>
+      </div>
+      <span style="font-size:32px">☕</span>
+    </div>
   </div>
+
+  <p class="section-title">Productos</p>
+  <div class="product-list" id="product-list"></div>
+
+  <div class="add-section">
+    <div class="add-row">
+      <input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40" />
+      <input class="price-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs. precio" />
+    </div>
+    <div class="add-row">
+      <button class="add-btn" onclick="addProduct()">+ Agregar producto</button>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
 </div>
 
-<button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
-
+<!-- Modal editar precio -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
     <h3 id="modal-title">Editar precio</h3>
@@ -138,41 +215,84 @@
 
 <script>
   const ICONS = {'Americano':'☕','Cappuccino':'☕','Latte':'🥛','Mocaccino':'🍫','Iced Latte':'🧊','Espresso':'☕','Frappé':'🧋','Chocolate caliente':'🍫','Té verde':'🍵','Matcha latte':'🍵'};
-  const DEFAULTS = [
-    {name:'Americano',price:15,count:0},{name:'Cappuccino',price:20,count:0},
-    {name:'Latte',price:20,count:0},{name:'Mocaccino',price:22,count:0},
-    {name:'Iced Latte',price:22,count:0},{name:'Espresso',price:12,count:0},
-    {name:'Frappé',price:25,count:0},{name:'Chocolate caliente',price:18,count:0},
+
+  const DEFAULT_PRODUCTS = [
+    {name:'Americano',price:15},{name:'Cappuccino',price:20},
+    {name:'Latte',price:20},{name:'Mocaccino',price:22},
+    {name:'Iced Latte',price:22},{name:'Espresso',price:12},
+    {name:'Frappé',price:25},{name:'Chocolate caliente',price:18},
   ];
-  const KEY = 'arcafe_ventas_v2';
+
+  const LOCATIONS = {
+    aeropuerto: { name: 'Aeropuerto', icon: '✈️' },
+    teleferico: { name: 'Teleférico Morado', icon: '🚡' }
+  };
+
+  const PRODUCTS_KEY = 'arcafe_products_v3';
+  const SALES_KEY    = id => `arcafe_sales_v3_${id}`;
+
+  let currentLocation = null;
   let editingIndex = null;
 
-  function loadData() {
-    try { const s = localStorage.getItem(KEY); if (s) return JSON.parse(s); } catch(e) {}
-    return DEFAULTS.map(p => ({...p}));
+  // ── Products (shared between locations) ──
+  function loadProducts() {
+    try { const s = localStorage.getItem(PRODUCTS_KEY); if (s) return JSON.parse(s); } catch(e) {}
+    return DEFAULT_PRODUCTS.map(p => ({...p}));
   }
-  function saveData() { try { localStorage.setItem(KEY, JSON.stringify(products)); } catch(e) {} }
+  function saveProducts() { try { localStorage.setItem(PRODUCTS_KEY, JSON.stringify(products)); } catch(e) {} }
 
-  let products = loadData();
+  // ── Sales counts (per location) ──
+  function loadSales(locId) {
+    try { const s = localStorage.getItem(SALES_KEY(locId)); if (s) return JSON.parse(s); } catch(e) {}
+    return {};
+  }
+  function saveSales() {
+    try { localStorage.setItem(SALES_KEY(currentLocation), JSON.stringify(sales)); } catch(e) {}
+  }
+
+  let products = loadProducts();
+  let sales = {};
+
+  function getCount(name) { return sales[name] || 0; }
 
   function getIcon(name) { return ICONS[name] || '☕'; }
 
+  // ── Navigation ──
+  function selectLocation(locId) {
+    currentLocation = locId;
+    sales = loadSales(locId);
+    document.getElementById('screen-picker').style.display = 'none';
+    document.getElementById('screen-app').style.display = 'block';
+    document.getElementById('loc-icon').textContent = LOCATIONS[locId].icon;
+    document.getElementById('loc-name').textContent = LOCATIONS[locId].name;
+    document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-BO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
+    render();
+  }
+
+  function goBack() {
+    currentLocation = null;
+    document.getElementById('screen-app').style.display = 'none';
+    document.getElementById('screen-picker').style.display = 'flex';
+  }
+
+  // ── Render ──
   function render() {
     const list = document.getElementById('product-list');
-    const totalU = products.reduce((s,p) => s + p.count, 0);
-    const totalBs = products.reduce((s,p) => s + p.count * (p.price||0), 0);
-    const top = [...products].sort((a,b) => b.count - a.count)[0];
+    const totalU = products.reduce((s,p) => s + getCount(p.name), 0);
+    const totalBs = products.reduce((s,p) => s + getCount(p.name) * (p.price||0), 0);
+    const top = [...products].sort((a,b) => getCount(b.name) - getCount(a.name))[0];
 
     document.getElementById('total-unidades').textContent = totalU;
     document.getElementById('total-dinero').textContent = 'Bs. ' + totalBs.toFixed(2);
-    document.getElementById('top-producto').textContent = top && top.count > 0 ? top.name : '—';
+    document.getElementById('top-producto').textContent = top && getCount(top.name) > 0 ? top.name : '—';
 
     list.innerHTML = '';
-    if (!products.length) { list.innerHTML = '<p class="empty">Sin productos. Agrega uno abajo.</p>'; saveData(); return; }
+    if (!products.length) { list.innerHTML = '<p class="empty">Sin productos. Agrega uno abajo.</p>'; return; }
 
     products.forEach((p, i) => {
-      const pct = totalU > 0 ? Math.round(p.count/totalU*100) : 0;
-      const sub = (p.count*p.price).toFixed(2);
+      const cnt = getCount(p.name);
+      const pct = totalU > 0 ? Math.round(cnt/totalU*100) : 0;
+      const sub = (cnt*(p.price||0)).toFixed(2);
       const card = document.createElement('div');
       card.className = 'product-card';
       card.innerHTML = `
@@ -182,25 +302,31 @@
           <div class="product-price" onclick="openModal(${i})">
             ${p.price > 0 ? 'Bs. '+p.price.toFixed(2)+' ✏️' : '+ Asignar precio'}
           </div>
-          <div class="product-sub">${p.count > 0 ? pct+'% del total · Bs. '+sub : 'Sin ventas aún'}</div>
+          <div class="product-sub">${cnt > 0 ? pct+'% del total · Bs. '+sub : 'Sin ventas aún'}</div>
         </div>
         <div class="controls">
-          <button class="btn" onclick="change(${i},-1)" ${p.count===0?'disabled':''}>−</button>
-          <span class="count">${p.count}</span>
+          <button class="btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button>
+          <span class="count">${cnt}</span>
           <button class="btn" onclick="change(${i},1)">+</button>
         </div>
         <button class="delete-btn" onclick="deleteProduct(${i})">✕</button>
       `;
       list.appendChild(card);
     });
-    saveData();
   }
 
-  function change(i, delta) { products[i].count = Math.max(0, products[i].count + delta); render(); }
+  function change(i, delta) {
+    const name = products[i].name;
+    sales[name] = Math.max(0, getCount(name) + delta);
+    saveSales();
+    render();
+  }
 
   function deleteProduct(i) {
-    if (!confirm('¿Eliminar "' + products[i].name + '"?')) return;
-    products.splice(i, 1); render();
+    if (!confirm('¿Eliminar "' + products[i].name + '"?\nSe eliminará de ambos locales.')) return;
+    delete sales[products[i].name];
+    products.splice(i, 1);
+    saveProducts(); saveSales(); render();
   }
 
   function addProduct() {
@@ -212,8 +338,9 @@
     if (products.find(p => p.name.toLowerCase() === name.toLowerCase())) {
       nameEl.style.outline = '1px solid red'; setTimeout(() => nameEl.style.outline='', 1200); return;
     }
-    products.push({name, price, count:0});
-    nameEl.value = ''; priceEl.value = ''; render();
+    products.push({name, price});
+    nameEl.value = ''; priceEl.value = '';
+    saveProducts(); render();
   }
 
   function openModal(i) {
@@ -227,14 +354,15 @@
   function savePrice() {
     if (editingIndex === null) return;
     products[editingIndex].price = parseFloat(document.getElementById('modal-price').value) || 0;
-    closeModal(); render();
+    saveProducts(); closeModal(); render();
   }
 
   function closeModal() { document.getElementById('modal-bg').classList.remove('open'); editingIndex = null; }
 
   function resetAll() {
-    if (!confirm('¿Reiniciar todas las cantidades a 0?')) return;
-    products.forEach(p => p.count = 0); render();
+    if (!confirm('¿Reiniciar todas las ventas de ' + LOCATIONS[currentLocation].name + ' a 0?')) return;
+    sales = {};
+    saveSales(); render();
   }
 
   document.getElementById('new-name').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('new-price').focus(); });
@@ -242,11 +370,7 @@
   document.getElementById('modal-price').addEventListener('keydown', e => { if(e.key==='Enter') savePrice(); });
   document.getElementById('modal-bg').addEventListener('click', e => { if(e.target.id==='modal-bg') closeModal(); });
 
-  document.getElementById('fecha').textContent = new Date().toLocaleDateString('es-BO', {weekday:'long',year:'numeric',month:'long',day:'numeric'});
-
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
-
-  render();
 </script>
 </body>
 </html>
