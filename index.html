@@ -17,7 +17,6 @@
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-    /* SCREENS */
     .screen { display: none; }
     .screen.active { display: block; }
     #screen-picker.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1.5rem; text-align: center; }
@@ -43,7 +42,6 @@
     .hdr-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 6px 10px; font-size: 12px; color: var(--text2); cursor: pointer; font-family: inherit; white-space: nowrap; }
     .hdr-btn:active { background: var(--gold-dim); color: var(--gold); }
 
-    /* LOC BADGE */
     .loc-badge { margin: 0.75rem 1rem 0; background: var(--gold-dim); border: 1px solid var(--border); border-radius: 10px; padding: 6px 12px; display: flex; align-items: center; gap: 8px; }
     .loc-badge p { font-size: 13px; font-weight: 600; color: var(--gold); }
 
@@ -51,10 +49,12 @@
     .summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 10px; padding: 0.75rem 1rem 1rem; }
     .metric { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 0.85rem 1rem; }
     .metric.highlight { background: var(--gold-dim); border-color: var(--gold); grid-column: span 2; display: flex; align-items: center; justify-content: space-between; }
+    .metric.span2 { grid-column: span 2; }
     .metric-label { font-size: 11px; color: var(--text2); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
     .metric-value { font-size: 24px; font-weight: 700; color: var(--text); }
     .metric.highlight .metric-value { font-size: 28px; color: var(--gold); }
     .metric-value.small { font-size: 14px; font-weight: 500; padding-top: 3px; }
+    .metric-value.medium { font-size: 20px; }
 
     .section-title { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.08em; padding: 0 1rem 0.6rem; }
 
@@ -80,41 +80,41 @@
     .add-row:last-child { margin-bottom: 0; }
     .add-input { flex: 1; border: none; background: var(--bg3); border-radius: 8px; padding: 9px 12px; font-size: 14px; color: var(--text); outline: none; font-family: inherit; }
     .add-input::placeholder { color: var(--text2); }
-    .price-input { width: 100px; border: none; background: var(--bg3); border-radius: 8px; padding: 9px 10px; font-size: 14px; color: var(--gold); outline: none; font-family: inherit; }
-    .price-input::placeholder { color: var(--text2); }
+    .small-input { width: 80px; border: none; background: var(--bg3); border-radius: 8px; padding: 9px 10px; font-size: 14px; color: var(--gold); outline: none; font-family: inherit; }
+    .small-input::placeholder { color: var(--text2); }
     .add-btn { background: var(--gold); color: #0d0d0d; border: none; border-radius: 10px; padding: 9px 16px; font-size: 14px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; }
     .add-btn:active { opacity: 0.85; }
     .reset-btn { display: block; margin: 0.5rem auto 0; background: transparent; border: 1px solid rgba(192,57,43,0.35); color: var(--danger); border-radius: 10px; padding: 9px 22px; font-size: 13px; cursor: pointer; font-family: inherit; opacity: 0.7; }
     .empty { text-align: center; color: var(--text2); font-size: 14px; padding: 1.5rem; }
 
-    /* REPORT SCREEN */
+    /* REPORT */
     #screen-report { padding-bottom: 3rem; }
     .report-header { background: var(--bg); border-bottom: 1px solid var(--border); padding: 0.85rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
     .report-header h2 { flex: 1; font-size: 16px; font-weight: 700; color: var(--gold); }
     .back-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 10px; padding: 6px 12px; font-size: 13px; color: var(--text2); cursor: pointer; font-family: inherit; }
     .back-btn:active { background: var(--gold-dim); }
-
-    .report-section { margin: 1rem 1rem 0; }
     .report-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; padding: 1rem; margin-bottom: 10px; }
     .report-card h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--text2); margin-bottom: 0.75rem; }
-
     .report-row { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid rgba(201,168,76,0.08); }
     .report-row:last-child { border-bottom: none; }
     .report-row-name { font-size: 14px; color: var(--text); }
     .report-row-right { text-align: right; }
-    .report-row-units { font-size: 13px; color: var(--text2); }
+    .report-row-units { font-size: 12px; color: var(--text2); }
     .report-row-bs { font-size: 14px; font-weight: 600; color: var(--gold); }
-
+    .report-row-grams { font-size: 11px; color: #7a9a70; margin-top: 1px; }
     .report-total { background: var(--gold-dim); border: 1px solid var(--gold); border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    .report-total-label { font-size: 13px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; }
-    .report-total-value { font-size: 28px; font-weight: 800; color: var(--gold); }
+    .report-total-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .report-total-value { font-size: 26px; font-weight: 800; color: var(--gold); }
+    .grams-total { background: rgba(100,160,80,0.1); border: 1px solid rgba(100,160,80,0.3); border-radius: 14px; padding: 1rem 1.25rem; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .grams-total-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+    .grams-total-value { font-size: 26px; font-weight: 800; color: #7acf6a; }
 
     /* CHART */
     .chart-wrap { overflow-x: auto; padding-bottom: 4px; }
     .chart { display: flex; align-items: flex-end; gap: 4px; height: 100px; padding: 0 4px; min-width: max-content; }
     .chart-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
     .chart-bar-wrap { display: flex; align-items: flex-end; height: 80px; }
-    .chart-bar { width: 22px; background: var(--gold); border-radius: 4px 4px 0 0; min-height: 3px; transition: height 0.3s; }
+    .chart-bar { width: 22px; background: var(--gold); border-radius: 4px 4px 0 0; min-height: 3px; }
     .chart-bar.empty { background: var(--bg3); }
     .chart-label { font-size: 9px; color: var(--text2); }
     .chart-val { font-size: 9px; color: var(--gold); font-weight: 600; }
@@ -125,9 +125,11 @@
     .modal-bg.open { display: flex; }
     .modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; padding: 1.5rem 1.25rem 2.5rem; width: 100%; max-width: 480px; }
     .modal h3 { font-size: 16px; font-weight: 600; color: var(--gold); margin-bottom: 1rem; }
+    .modal-fields { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; }
+    .modal-field-label { font-size: 11px; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
     .modal-row { display: flex; gap: 8px; }
     .modal input { flex: 1; border: 1px solid var(--border); background: var(--bg3); border-radius: 10px; padding: 10px 14px; font-size: 16px; color: var(--gold); outline: none; font-family: inherit; }
-    .modal-save { background: var(--gold); color: #0d0d0d; border: none; border-radius: 10px; padding: 10px 20px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .modal-save { background: var(--gold); color: #0d0d0d; border: none; border-radius: 10px; padding: 11px 0; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; width: 100%; }
     .modal-cancel { display: block; margin: 0.75rem auto 0; background: transparent; border: none; color: var(--text2); font-size: 14px; cursor: pointer; font-family: inherit; }
   </style>
 </head>
@@ -184,6 +186,10 @@
       </div>
       <span style="font-size:32px">☕</span>
     </div>
+    <div class="metric span2" style="background:rgba(100,160,80,0.08);border-color:rgba(100,160,80,0.25)">
+      <div class="metric-label">☕ Café utilizado hoy</div>
+      <div class="metric-value medium" id="total-grams" style="color:#7acf6a">0 g</div>
+    </div>
   </div>
 
   <p class="section-title">Productos</p>
@@ -192,10 +198,11 @@
   <div class="add-section">
     <div class="add-row">
       <input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40" />
-      <input class="price-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs." />
     </div>
     <div class="add-row">
-      <button class="add-btn" onclick="addProduct()">+ Agregar producto</button>
+      <input class="small-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs." />
+      <input class="small-input" id="new-grams" type="number" min="0" step="1" placeholder="g café" />
+      <button class="add-btn" onclick="addProduct()">+ Agregar</button>
     </div>
   </div>
   <button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
@@ -207,31 +214,50 @@
     <button class="back-btn" onclick="showApp()">← Volver</button>
     <h2 id="report-title">Informe del día</h2>
   </div>
-  <div id="report-body" style="padding-bottom:2rem"></div>
+  <div id="report-body" style="padding:1rem 1rem 2rem"></div>
 </div>
 
-<!-- MODAL precio -->
+<!-- MODAL editar producto -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
-    <h3 id="modal-title">Editar precio</h3>
-    <div class="modal-row">
-      <input type="number" id="modal-price" min="0" step="0.5" placeholder="Precio en Bs." />
-      <button class="modal-save" onclick="savePrice()">Guardar</button>
+    <h3 id="modal-title">Editar producto</h3>
+    <div class="modal-fields">
+      <div>
+        <div class="modal-field-label">Precio (Bs.)</div>
+        <div class="modal-row">
+          <input type="number" id="modal-price" min="0" step="0.5" placeholder="Precio en Bs." />
+        </div>
+      </div>
+      <div>
+        <div class="modal-field-label">Gramos de café</div>
+        <div class="modal-row">
+          <input type="number" id="modal-grams" min="0" step="1" placeholder="g (0 si no usa café)" />
+        </div>
+      </div>
     </div>
+    <button class="modal-save" onclick="saveModal()">Guardar</button>
     <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
   </div>
 </div>
 
 <script>
   const ICONS = {'Americano':'☕','Cappuccino':'☕','Latte':'🥛','Mocaccino':'🍫','Iced Latte':'🧊','Espresso':'☕','Frappé':'🧋','Chocolate caliente':'🍫','Té verde':'🍵','Matcha latte':'🍵'};
-  const DEFAULTS = [{name:'Americano',price:15},{name:'Cappuccino',price:20},{name:'Latte',price:20},{name:'Mocaccino',price:22},{name:'Iced Latte',price:22},{name:'Espresso',price:12},{name:'Frappé',price:25},{name:'Chocolate caliente',price:18}];
+  const DEFAULTS = [
+    {name:'Americano',  price:15, grams:20},
+    {name:'Cappuccino', price:20, grams:20},
+    {name:'Latte',      price:20, grams:20},
+    {name:'Mocaccino',  price:22, grams:20},
+    {name:'Iced Latte', price:22, grams:20},
+    {name:'Espresso',   price:12, grams:18},
+    {name:'Frappé',     price:25, grams:20},
+    {name:'Chocolate caliente', price:18, grams:0},
+  ];
   const LOCS = { aeropuerto:{name:'Aeropuerto',icon:'✈️'}, teleferico:{name:'Teleférico Morado',icon:'🚡'} };
-  const PROD_KEY = 'arcafe_products_v3';
+  const PROD_KEY  = 'arcafe_products_v4';
   const SALES_KEY = id => `arcafe_sales_v4_${id}`;
 
   let currentLoc = null, editingIndex = null;
   let products = [], sales = [];
-  // sales = array of {name, ts} where ts = timestamp ms
 
   function loadProducts() { try { const s=localStorage.getItem(PROD_KEY); if(s) return JSON.parse(s); } catch(e){} return DEFAULTS.map(p=>({...p})); }
   function saveProducts() { try { localStorage.setItem(PROD_KEY, JSON.stringify(products)); } catch(e){} }
@@ -240,7 +266,6 @@
 
   function getCount(name) { return sales.filter(s=>s.name===name).length; }
   function getIcon(n) { return ICONS[n]||'☕'; }
-
   function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
   function selectLocation(id) {
@@ -260,14 +285,13 @@
     const list = document.getElementById('product-list');
     const totalU = sales.length;
     const totalBs = sales.reduce((s,sale)=>{ const p=products.find(p=>p.name===sale.name); return s+(p?p.price||0:0); },0);
-    const counts = {};
-    products.forEach(p=>counts[p.name]=0);
-    sales.forEach(s=>{ if(counts[s.name]!==undefined) counts[s.name]++; });
-    const top = Object.entries(counts).sort((a,b)=>b[1]-a[1])[0];
+    const totalGrams = sales.reduce((s,sale)=>{ const p=products.find(p=>p.name===sale.name); return s+(p?p.grams||0:0); },0);
+    const top = products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
 
     document.getElementById('total-unidades').textContent = totalU;
     document.getElementById('total-dinero').textContent = 'Bs. '+totalBs.toFixed(2);
-    document.getElementById('top-producto').textContent = top && top[1]>0 ? top[0] : '—';
+    document.getElementById('total-grams').textContent = totalGrams >= 1000 ? (totalGrams/1000).toFixed(2)+' kg' : totalGrams+' g';
+    document.getElementById('top-producto').textContent = top && top.cnt>0 ? top.name : '—';
 
     list.innerHTML = '';
     if(!products.length){ list.innerHTML='<p class="empty">Sin productos.</p>'; return; }
@@ -276,14 +300,17 @@
       const cnt = getCount(p.name);
       const pct = totalU>0?Math.round(cnt/totalU*100):0;
       const sub = (cnt*(p.price||0)).toFixed(2);
+      const gramsUsed = cnt*(p.grams||0);
       const card = document.createElement('div');
       card.className='product-card';
       card.innerHTML=`
         <div class="product-icon">${getIcon(p.name)}</div>
         <div class="product-info">
           <div class="product-name">${p.name}</div>
-          <div class="product-price" onclick="openModal(${i})">${p.price>0?'Bs. '+p.price.toFixed(2)+' ✏️':'+ Asignar precio'}</div>
-          <div class="product-sub">${cnt>0?pct+'% · Bs. '+sub:'Sin ventas aún'}</div>
+          <div class="product-price" onclick="openModal(${i})">
+            ${p.price>0?'Bs. '+p.price.toFixed(2):' + precio'} · ${p.grams>0?p.grams+'g café':' + gramos'} ✏️
+          </div>
+          <div class="product-sub">${cnt>0?pct+'% · Bs. '+sub+(gramsUsed>0?' · '+gramsUsed+'g':''):'Sin ventas aún'}</div>
         </div>
         <div class="controls">
           <button class="btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button>
@@ -298,43 +325,45 @@
 
   function change(i, delta) {
     const name = products[i].name;
-    if(delta > 0) {
-      sales.push({name, ts: Date.now()});
+    if(delta>0) {
+      sales.push({name, ts:Date.now()});
     } else {
-      // Remove last sale of this product
-      const idx = sales.map((s,i)=>s.name===name?i:-1).filter(i=>i>=0).pop();
-      if(idx !== undefined) sales.splice(idx,1);
+      const idx = sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
+      if(idx!==undefined) sales.splice(idx,1);
     }
     saveSales(); render();
   }
 
   function deleteProduct(i) {
     if(!confirm('¿Eliminar "'+products[i].name+'"?\nSe eliminará de ambos locales.')) return;
-    const name = products[i].name;
-    sales = sales.filter(s=>s.name!==name);
+    const name=products[i].name;
+    sales=sales.filter(s=>s.name!==name);
     products.splice(i,1);
     saveProducts(); saveSales(); render();
   }
 
   function addProduct() {
-    const ne=document.getElementById('new-name'), pe=document.getElementById('new-price');
-    const name=ne.value.trim(), price=parseFloat(pe.value)||0;
+    const ne=document.getElementById('new-name'), pe=document.getElementById('new-price'), ge=document.getElementById('new-grams');
+    const name=ne.value.trim(), price=parseFloat(pe.value)||0, grams=parseInt(ge.value)||0;
     if(!name){ne.focus();return;}
     if(products.find(p=>p.name.toLowerCase()===name.toLowerCase())){ne.style.outline='1px solid red';setTimeout(()=>ne.style.outline='',1200);return;}
-    products.push({name,price}); ne.value=''; pe.value='';
+    products.push({name,price,grams});
+    ne.value=''; pe.value=''; ge.value='';
     saveProducts(); render();
   }
 
   function openModal(i) {
     editingIndex=i;
-    document.getElementById('modal-title').textContent='Precio — '+products[i].name;
+    document.getElementById('modal-title').textContent='Editar — '+products[i].name;
     document.getElementById('modal-price').value=products[i].price||'';
+    document.getElementById('modal-grams').value=products[i].grams||'';
     document.getElementById('modal-bg').classList.add('open');
     setTimeout(()=>document.getElementById('modal-price').focus(),100);
   }
-  function savePrice() {
+  function saveModal() {
     if(editingIndex===null)return;
     products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;
+    products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;
     saveProducts(); closeModal(); render();
   }
   function closeModal() { document.getElementById('modal-bg').classList.remove('open'); editingIndex=null; }
@@ -346,76 +375,83 @@
 
   // ── REPORT ──
   function showReport() {
-    const loc = LOCS[currentLoc];
-    document.getElementById('report-title').textContent = loc.name+' — '+new Date().toLocaleDateString('es-BO',{day:'numeric',month:'long'});
+    const loc=LOCS[currentLoc];
+    document.getElementById('report-title').textContent=loc.name+' — '+new Date().toLocaleDateString('es-BO',{day:'numeric',month:'long'});
 
-    const totalBs = sales.reduce((s,sale)=>{ const p=products.find(p=>p.name===sale.name); return s+(p?p.price||0:0); },0);
+    const totalBs=sales.reduce((s,sale)=>{ const p=products.find(p=>p.name===sale.name); return s+(p?p.price||0:0); },0);
+    const totalGrams=sales.reduce((s,sale)=>{ const p=products.find(p=>p.name===sale.name); return s+(p?p.grams||0:0); },0);
+    const gramsDisplay = totalGrams>=1000?(totalGrams/1000).toFixed(2)+' kg':totalGrams+' g';
 
-    // Per product
-    let rows = products.map(p=>{
+    const rows=products.map(p=>{
       const cnt=getCount(p.name);
-      const bs=(cnt*(p.price||0)).toFixed(2);
-      return {name:p.name, cnt, bs:parseFloat(bs)};
+      const gramsUsed=cnt*(p.grams||0);
+      return {name:p.name,cnt,bs:cnt*(p.price||0),grams:gramsUsed};
     }).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
 
-    // Hourly chart data
-    const hourCounts = {};
+    // Hourly chart
+    const hourCounts={};
     sales.forEach(s=>{ const h=new Date(s.ts).getHours(); hourCounts[h]=(hourCounts[h]||0)+1; });
-    const hours = Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
-    const maxH = hours.length ? Math.max(...hours) : 0;
-    const minH = hours.length ? Math.min(...hours) : 0;
-    const maxVal = hours.length ? Math.max(...Object.values(hourCounts)) : 1;
+    const hours=Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
+    const maxVal=hours.length?Math.max(...Object.values(hourCounts)):1;
+    const minH=hours.length?Math.min(...hours):0;
+    const maxH=hours.length?Math.max(...hours):0;
 
-    let chartHTML = '';
+    let chartHTML='';
     if(!hours.length) {
-      chartHTML = '<p class="chart-empty">Sin datos de horario aún.</p>';
+      chartHTML='<p class="chart-empty">Sin datos de horario aún.</p>';
     } else {
-      chartHTML = '<div class="chart-wrap"><div class="chart">';
-      for(let h=minH; h<=maxH; h++) {
-        const val = hourCounts[h]||0;
-        const barH = val>0 ? Math.max(6, Math.round((val/maxVal)*80)) : 3;
-        const ampm = h<12?h+'am':h===12?'12pm':(h-12)+'pm';
-        chartHTML += `<div class="chart-col">
+      chartHTML='<div class="chart-wrap"><div class="chart">';
+      for(let h=minH;h<=maxH;h++){
+        const val=hourCounts[h]||0;
+        const barH=val>0?Math.max(6,Math.round((val/maxVal)*80)):3;
+        const ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+        chartHTML+=`<div class="chart-col">
           <div class="chart-val">${val>0?val:''}</div>
           <div class="chart-bar-wrap"><div class="chart-bar ${val===0?'empty':''}" style="height:${barH}px"></div></div>
           <div class="chart-label">${ampm}</div>
         </div>`;
       }
-      chartHTML += '</div></div>';
+      chartHTML+='</div></div>';
     }
 
-    let rowsHTML = rows.length
-      ? rows.map(r=>`<div class="report-row">
-          <span class="report-row-name">${getIcon(r.name)} ${r.name}</span>
-          <div class="report-row-right">
-            <div class="report-row-units">${r.cnt} unid.</div>
-            <div class="report-row-bs">Bs. ${r.bs.toFixed(2)}</div>
-          </div>
-        </div>`).join('')
-      : '<p class="empty">Sin ventas registradas hoy.</p>';
-
-    document.getElementById('report-body').innerHTML = `
-      <div style="padding:1rem 1rem 0">
-        <div class="report-total">
-          <div>
-            <div class="report-total-label">Total generado</div>
-            <div class="report-total-value">Bs. ${totalBs.toFixed(2)}</div>
-          </div>
-          <div style="text-align:right">
-            <div class="report-total-label">Unidades</div>
-            <div style="font-size:22px;font-weight:700;color:var(--text)">${sales.length}</div>
-          </div>
+    const rowsHTML=rows.length?rows.map(r=>`
+      <div class="report-row">
+        <span class="report-row-name">${getIcon(r.name)} ${r.name}</span>
+        <div class="report-row-right">
+          <div class="report-row-units">${r.cnt} unid.</div>
+          <div class="report-row-bs">Bs. ${r.bs.toFixed(2)}</div>
+          ${r.grams>0?`<div class="report-row-grams">☕ ${r.grams}g</div>`:''}
         </div>
+      </div>`).join(''):'<p class="empty">Sin ventas registradas hoy.</p>';
 
-        <div class="report-card">
-          <h3>Ventas por producto</h3>
-          ${rowsHTML}
+    document.getElementById('report-body').innerHTML=`
+      <div class="report-total">
+        <div>
+          <div class="report-total-label">Total generado</div>
+          <div class="report-total-value">Bs. ${totalBs.toFixed(2)}</div>
         </div>
+        <div style="text-align:right">
+          <div class="report-total-label">Unidades</div>
+          <div style="font-size:22px;font-weight:700;color:var(--text)">${sales.length}</div>
+        </div>
+      </div>
 
-        <div class="report-card">
-          <h3>Actividad por hora</h3>
-          ${chartHTML}
+      <div class="grams-total">
+        <div>
+          <div class="grams-total-label">☕ Café utilizado</div>
+          <div class="grams-total-value">${gramsDisplay}</div>
         </div>
+        <div style="text-align:right;font-size:28px">🫘</div>
+      </div>
+
+      <div class="report-card">
+        <h3>Ventas por producto</h3>
+        ${rowsHTML}
+      </div>
+
+      <div class="report-card">
+        <h3>Actividad por hora</h3>
+        ${chartHTML}
       </div>
     `;
 
@@ -423,8 +459,8 @@
   }
 
   document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-price').focus();});
-  document.getElementById('new-price').addEventListener('keydown',e=>{if(e.key==='Enter')addProduct();});
-  document.getElementById('modal-price').addEventListener('keydown',e=>{if(e.key==='Enter')savePrice();});
+  document.getElementById('new-price').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-grams').focus();});
+  document.getElementById('new-grams').addEventListener('keydown',e=>{if(e.key==='Enter')addProduct();});
   document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal();});
 
   if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
