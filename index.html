@@ -11,7 +11,6 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     :root {
       --gold: #c9a84c; --gold-light: #e8d08a; --gold-dim: rgba(201,168,76,0.10);
@@ -26,21 +25,6 @@
     .screen.active { display: block; }
     #screen-picker.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2.5rem 1.5rem; text-align: center; }
 
-    /* LOADING */
-    #loading-overlay { display: none; position: fixed; inset: 0; background: rgba(8,8,8,0.85); z-index: 200; align-items: center; justify-content: center; flex-direction: column; gap: 16px; }
-    #loading-overlay.show { display: flex; }
-    .spinner { width: 32px; height: 32px; border: 2px solid var(--gold-border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-text { font-size: 11px; color: var(--text3); letter-spacing: 0.15em; text-transform: uppercase; }
-
-    /* SYNC STATUS */
-    .sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--text3); display: inline-block; margin-right: 4px; }
-    .sync-dot.online { background: var(--green); }
-    .sync-dot.syncing { background: var(--gold); animation: pulse 1s infinite; }
-    .sync-dot.error { background: var(--danger); }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    /* PICKER */
     .picker-logo-wrap { width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--gold-border); overflow: hidden; margin-bottom: 1.75rem; box-shadow: 0 0 40px rgba(201,168,76,0.12); }
     .picker-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
     .picker-brand { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; line-height: 1; margin-bottom: 6px; }
@@ -54,13 +38,12 @@
     .location-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: 0.03em; }
     .location-sub { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 3px; }
 
-    /* HEADER */
     header { background: var(--bg); border-bottom: 1px solid var(--gold-border); padding: 0.9rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
     .header-logo { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1px solid var(--gold-border); flex-shrink: 0; }
     .header-logo img { width: 100%; height: 100%; object-fit: cover; }
     .header-text { flex: 1; }
     .header-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em; line-height: 1; }
-    .header-text p { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; margin-top: 2px; text-transform: uppercase; display: flex; align-items: center; }
+    .header-text p { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; margin-top: 2px; text-transform: uppercase; }
     .hdr-btns { display: flex; gap: 6px; }
     .hdr-btn { background: transparent; border: 1px solid var(--gold-border); border-radius: 3px; padding: 6px 10px; font-size: 10px; font-weight: 600; color: var(--text2); cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 5px; }
     .hdr-btn:active { background: var(--gold-dim); color: var(--gold); border-color: var(--gold); }
@@ -112,7 +95,6 @@
     .reset-btn { display: block; margin: 0.25rem auto 0.5rem; background: transparent; border: none; color: var(--text3); font-size: 10px; cursor: pointer; font-family: 'Jost', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
     .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 1.5rem; }
 
-    /* REPORT */
     #screen-report { padding-bottom: 3rem; }
     .report-header { background: var(--bg); border-bottom: 1px solid var(--gold-border); padding: 0.9rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; }
     .report-header h2 { flex: 1; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; }
@@ -148,11 +130,10 @@
     .chart-bar-wrap { display: flex; align-items: flex-end; height: 80px; }
     .chart-bar { width: 24px; background: var(--gold); border-radius: 2px 2px 0 0; min-height: 3px; opacity: 0.85; }
     .chart-bar.empty { background: var(--bg4); opacity: 1; }
-    .chart-label { font-size: 9px; color: var(--text3); letter-spacing: 0.05em; }
+    .chart-label { font-size: 9px; color: var(--text3); }
     .chart-val { font-size: 9px; color: var(--gold); font-weight: 600; min-height: 12px; }
     .chart-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem; }
 
-    /* MODAL */
     .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 100; align-items: flex-end; justify-content: center; }
     .modal-bg.open { display: flex; }
     .modal { background: var(--bg2); border: 1px solid var(--gold-border); border-top: 2px solid var(--gold); padding: 1.5rem 1.25rem 2.5rem; width: 100%; max-width: 480px; }
@@ -208,12 +189,6 @@
   </defs>
 </svg>
 
-<!-- LOADING -->
-<div id="loading-overlay">
-  <div class="spinner"></div>
-  <div class="loading-text" id="loading-text">Conectando...</div>
-</div>
-
 <!-- PICKER -->
 <div id="screen-picker" class="screen active">
   <div class="picker-logo-wrap"><img src="logo.png" alt="Arcafé" /></div>
@@ -236,7 +211,7 @@
     <div class="header-logo"><img src="logo.png" alt="Arcafé" /></div>
     <div class="header-text">
       <h1>Arcafé</h1>
-      <p><span class="sync-dot" id="sync-dot"></span><span id="fecha"></span></p>
+      <p id="fecha"></p>
     </div>
     <div class="hdr-btns">
       <button class="hdr-btn" onclick="showReport()"><svg width="13" height="13" style="color:currentColor"><use href="#icon-chart"/></svg> Informe</button>
@@ -318,89 +293,37 @@
 </div>
 
 <script>
-  // ── SUPABASE ──
-  const SUPABASE_URL = 'https://honejabtnhcbvqcjqnoa.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_S3hcdGfL3nuD0qryhaPQcQ_dqX2NH0t';
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
   const LOCS = { aeropuerto:{name:'Aeropuerto',svgHref:'#icon-plane'}, teleferico:{name:'Teleférico Morado',svgHref:'#icon-cable'} };
+  const DEFAULTS = [
+    {name:'Americano',price:15,grams:20},{name:'Cappuccino',price:20,grams:20},
+    {name:'Latte',price:20,grams:20},{name:'Mocaccino',price:22,grams:20},
+    {name:'Iced Latte',price:22,grams:20},{name:'Espresso',price:12,grams:18},
+    {name:'Frappé',price:25,grams:20},{name:'Chocolate caliente',price:18,grams:0},
+  ];
+  const PROD_KEY  = 'arcafe_products_v5';
+  const SALES_KEY = id => `arcafe_sales_v5_${id}`;
 
-  let currentLoc=null, editingIndex=null;
-  let products=[], sales=[];
-  let reportData={};
-  let realtimeChannel=null;
+  let currentLoc=null, editingIndex=null, products=[], sales=[], reportData={};
 
-  function loading(show, text='Cargando...') {
-    const el=document.getElementById('loading-overlay');
-    document.getElementById('loading-text').textContent=text;
-    el.classList.toggle('show', show);
-  }
+  function loadProducts(){ try{const s=localStorage.getItem(PROD_KEY);if(s)return JSON.parse(s);}catch(e){}return DEFAULTS.map(p=>({...p})); }
+  function saveProducts(){ try{localStorage.setItem(PROD_KEY,JSON.stringify(products));}catch(e){} }
+  function loadSales(id){ try{const s=localStorage.getItem(SALES_KEY(id));if(s)return JSON.parse(s);}catch(e){}return []; }
+  function saveSales(){ try{localStorage.setItem(SALES_KEY(currentLoc),JSON.stringify(sales));}catch(e){} }
+  function getCount(name){ return sales.filter(s=>s.name===name).length; }
+  function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
-  function setSyncStatus(status) {
-    const dot=document.getElementById('sync-dot');
-    dot.className='sync-dot '+status;
-  }
-
-  function show(id) { document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
-  function goBack() { if(realtimeChannel) db.removeChannel(realtimeChannel); show('screen-picker'); }
-  function showApp() { show('screen-app'); }
-
-  // ── LOAD DATA ──
-  async function loadProducts() {
-    const {data,error}=await db.from('productos').select('*').order('nombre');
-    if(error){ console.error(error); return; }
-    products=data.map(p=>({id:p.id,name:p.nombre,price:parseFloat(p.precio)||0,grams:parseInt(p.gramos)||0}));
-  }
-
-  async function loadSales() {
-    const today=new Date(); today.setHours(0,0,0,0);
-    const {data,error}=await db.from('ventas').select('*')
-      .eq('local_id', currentLoc)
-      .gte('timestamp', today.toISOString())
-      .order('timestamp');
-    if(error){ console.error(error); return; }
-    sales=data.map(v=>({id:v.id,name:v.producto_nombre,ts:new Date(v.timestamp).getTime()}));
-  }
-
-  async function selectLocation(id) {
-    currentLoc=id;
+  function selectLocation(id){
+    currentLoc=id; sales=loadSales(id); products=loadProducts();
     document.getElementById('loc-name').textContent=LOCS[id].name;
     document.getElementById('loc-svg-use').setAttribute('href',LOCS[id].svgHref);
     document.getElementById('fecha').textContent=new Date().toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    loading(true,'Cargando datos...');
-    await loadProducts();
-    await loadSales();
-    loading(false);
-    show('screen-app');
-    setSyncStatus('online');
-    render();
-    subscribeRealtime();
+    show('screen-app'); render();
   }
 
-  // ── REALTIME ──
-  function subscribeRealtime() {
-    if(realtimeChannel) db.removeChannel(realtimeChannel);
-    realtimeChannel = db.channel('ventas-realtime')
-      .on('postgres_changes', {event:'INSERT',schema:'public',table:'ventas',filter:`local_id=eq.${currentLoc}`}, payload=>{
-        const v=payload.new;
-        sales.push({id:v.id,name:v.producto_nombre,ts:new Date(v.timestamp).getTime()});
-        setSyncStatus('online'); render();
-      })
-      .on('postgres_changes', {event:'DELETE',schema:'public',table:'ventas'}, payload=>{
-        sales=sales.filter(s=>s.id!==payload.old.id);
-        setSyncStatus('online'); render();
-      })
-      .on('postgres_changes', {event:'*',schema:'public',table:'productos'}, async ()=>{
-        await loadProducts(); render();
-      })
-      .subscribe(status=>{ if(status==='SUBSCRIBED') setSyncStatus('online'); });
-  }
+  function goBack(){ show('screen-picker'); }
+  function showApp(){ show('screen-app'); }
 
-  // ── RENDER ──
-  function getCount(name){ return sales.filter(s=>s.name===name).length; }
-
-  function render() {
+  function render(){
     const list=document.getElementById('product-list');
     const totalU=sales.length;
     const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
@@ -410,7 +333,6 @@
     document.getElementById('total-dinero').textContent='Bs. '+totalBs.toFixed(2);
     document.getElementById('total-grams').textContent=totalG>=1000?(totalG/1000).toFixed(2)+' kg':totalG+' g';
     document.getElementById('top-producto').textContent=top&&top.cnt>0?top.name:'—';
-
     list.innerHTML='';
     if(!products.length){list.innerHTML='<p class="empty">Sin productos.</p>';return;}
     products.forEach((p,i)=>{
@@ -438,40 +360,28 @@
     });
   }
 
-  // ── CHANGE ──
-  async function change(i, delta) {
+  function change(i,delta){
     const name=products[i].name;
-    setSyncStatus('syncing');
-    if(delta>0) {
-      const {data,error}=await db.from('ventas').insert({local_id:currentLoc,producto_nombre:name}).select().single();
-      if(!error){ sales.push({id:data.id,name,ts:new Date(data.timestamp).getTime()}); }
-    } else {
-      const last=sales.filter(s=>s.name===name).pop();
-      if(last){ await db.from('ventas').delete().eq('id',last.id); sales=sales.filter(s=>s.id!==last.id); }
-    }
-    setSyncStatus('online'); render();
+    if(delta>0){sales.push({name,ts:Date.now()});}
+    else{const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();if(idx!==undefined)sales.splice(idx,1);}
+    saveSales();render();
   }
 
-  async function deleteProduct(i) {
+  function deleteProduct(i){
     if(!confirm('¿Eliminar "'+products[i].name+'"?\nSe eliminará de ambos locales.'))return;
-    setSyncStatus('syncing');
-    await db.from('productos').delete().eq('id',products[i].id);
-    products.splice(i,1); setSyncStatus('online'); render();
+    sales=sales.filter(s=>s.name!==products[i].name);
+    products.splice(i,1);saveProducts();saveSales();render();
   }
 
-  async function addProduct() {
+  function addProduct(){
     const ne=document.getElementById('new-name'),pe=document.getElementById('new-price'),ge=document.getElementById('new-grams');
     const name=ne.value.trim(),price=parseFloat(pe.value)||0,grams=parseInt(ge.value)||0;
     if(!name){ne.focus();return;}
     if(products.find(p=>p.name.toLowerCase()===name.toLowerCase())){ne.style.borderBottomColor='red';setTimeout(()=>ne.style.borderBottomColor='',1500);return;}
-    setSyncStatus('syncing');
-    const {data,error}=await db.from('productos').insert({nombre:name,precio:price,gramos:grams}).select().single();
-    if(!error){ products.push({id:data.id,name,price,grams}); }
-    ne.value='';pe.value='';ge.value='';
-    setSyncStatus('online'); render();
+    products.push({name,price,grams});ne.value='';pe.value='';ge.value='';saveProducts();render();
   }
 
-  function openModal(i) {
+  function openModal(i){
     editingIndex=i;
     document.getElementById('modal-title').textContent=products[i].name;
     document.getElementById('modal-price').value=products[i].price||'';
@@ -479,26 +389,19 @@
     document.getElementById('modal-bg').classList.add('open');
     setTimeout(()=>document.getElementById('modal-price').focus(),100);
   }
-  async function saveModal() {
+  function saveModal(){
     if(editingIndex===null)return;
-    const price=parseFloat(document.getElementById('modal-price').value)||0;
-    const grams=parseInt(document.getElementById('modal-grams').value)||0;
-    setSyncStatus('syncing');
-    await db.from('productos').update({precio:price,gramos:grams}).eq('id',products[editingIndex].id);
-    products[editingIndex].price=price; products[editingIndex].grams=grams;
-    setSyncStatus('online'); closeModal(); render();
+    products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;
+    products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;
+    saveProducts();closeModal();render();
   }
   function closeModal(){document.getElementById('modal-bg').classList.remove('open');editingIndex=null;}
 
-  async function resetAll() {
-    if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+' del día?'))return;
-    setSyncStatus('syncing');
-    const today=new Date(); today.setHours(0,0,0,0);
-    await db.from('ventas').delete().eq('local_id',currentLoc).gte('timestamp',today.toISOString());
-    sales=[]; setSyncStatus('online'); render();
+  function resetAll(){
+    if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'?'))return;
+    sales=[];saveSales();render();
   }
 
-  // ── REPORT ──
   function buildReportData(){
     const now=new Date();
     const dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
@@ -514,7 +417,7 @@
   }
 
   function showReport(){
-    const d=buildReportData(); reportData=d;
+    const d=buildReportData();reportData=d;
     const loc=LOCS[currentLoc];
     document.getElementById('report-title').textContent=loc.name+' — '+d.now.toLocaleDateString('es-BO',{day:'numeric',month:'long'});
     const gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
@@ -538,7 +441,6 @@
           ${r.grams>0?`<div class="report-row-grams">${r.grams}g café</div>`:''}
         </div>
       </div>`).join(''):'<p class="empty">Sin ventas registradas hoy.</p>';
-
     document.getElementById('report-body').innerHTML=`
       <div class="report-totals">
         <div class="report-total-cell gold" style="display:flex;justify-content:space-between;align-items:center">
@@ -557,37 +459,24 @@
   }
 
   function downloadCSV(){
-    const d=reportData; if(!d.dateStr)return;
-    const loc=LOCS[currentLoc].name, dateISO=d.now.toISOString().slice(0,10);
+    const d=reportData;if(!d.dateStr)return;
+    const loc=LOCS[currentLoc].name,dateISO=d.now.toISOString().slice(0,10);
     let csv='Local,Fecha,Producto,Unidades,Precio Unitario (Bs.),Total (Bs.),Cafe utilizado (g)\n';
     d.rows.forEach(r=>{const p=products.find(p=>p.name===r.name);csv+=`"${loc}","${dateISO}","${r.name}",${r.cnt},${p?p.price.toFixed(2):'0.00'},${r.bs.toFixed(2)},${r.grams}\n`;});
     csv+=`"${loc}","${dateISO}","TOTAL",${sales.length},,${d.totalBs.toFixed(2)},${d.totalG}\n`;
     const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
     const url=URL.createObjectURL(blob);
-    const a=document.createElement('a'); a.href=url; a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${dateISO}.csv`; a.click(); URL.revokeObjectURL(url);
+    const a=document.createElement('a');a.href=url;a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${dateISO}.csv`;a.click();URL.revokeObjectURL(url);
   }
 
   function downloadPDF(){
-    const d=reportData; if(!d.dateStr)return;
-    const loc=LOCS[currentLoc].name, gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
+    const d=reportData;if(!d.dateStr)return;
+    const loc=LOCS[currentLoc].name,gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
     let rowsHTML=d.rows.length?d.rows.map(r=>`<tr><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;font-size:14px">${r.name}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:center;font-size:14px">${r.cnt}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:right;font-size:14px;color:#8B6914">Bs. ${r.bs.toFixed(2)}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:right;font-size:13px;color:#5a7a50">${r.grams>0?r.grams+'g':'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="padding:12px;text-align:center;color:#999">Sin ventas</td></tr>';
     let hoursHTML='';
     if(d.hours.length){for(let h=d.minH;h<=d.maxH;h++){const val=d.hourCounts[h]||0,pct=Math.round((val/d.maxVal)*100),ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';hoursHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:36px;font-size:11px;color:#999;text-align:right">${ampm}</div><div style="flex:1;background:#f0e8d8;border-radius:2px;height:16px;overflow:hidden"><div style="width:${pct}%;background:#c9a84c;height:100%;border-radius:2px"></div></div><div style="width:20px;font-size:11px;color:#8B6914;font-weight:600">${val||''}</div></div>`;}}
     else{hoursHTML='<p style="color:#999;font-size:13px">Sin datos.</p>';}
-    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;margin:0;padding:32px;max-width:600px;margin:0 auto}h1{font-size:32px;color:#c9a84c;letter-spacing:0.06em;margin:0}.sub{font-size:11px;color:#999;letter-spacing:0.15em;text-transform:uppercase;margin-top:4px}.divider{border:none;border-top:1px solid #e0d4b8;margin:20px 0}.totals{display:flex;gap:16px;margin-bottom:20px}.tot-box{flex:1;border:1px solid #e0d4b8;border-radius:4px;padding:14px;background:#faf7f0}.tot-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px}.tot-val{font-size:26px;font-weight:700;color:#c9a84c}.tot-val.dark{color:#1a1a1a}.tot-val.grn{color:#5a9a60;font-size:22px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{padding:8px 12px;background:#f5f0e8;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:#999;text-align:left;border-bottom:2px solid #e0d4b8}th:nth-child(2){text-align:center}th:nth-child(3),th:nth-child(4){text-align:right}.section{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.18em;margin-bottom:10px}.footer{margin-top:32px;font-size:10px;color:#bbb;text-align:center;letter-spacing:0.08em}</style></head><body>
-    <h1>Arcafé</h1><div class="sub">Café al Paso Premium</div><hr class="divider"/>
-    <div style="font-size:12px;color:#999;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase">${loc}</div>
-    <div style="font-size:13px;color:#5a5048;margin-bottom:20px">${d.dateStr}</div>
-    <div class="totals">
-      <div class="tot-box"><div class="tot-label">Total generado</div><div class="tot-val">Bs. ${d.totalBs.toFixed(2)}</div></div>
-      <div class="tot-box"><div class="tot-label">Unidades</div><div class="tot-val dark">${sales.length}</div></div>
-      <div class="tot-box"><div class="tot-label">Café utilizado</div><div class="tot-val grn">${gramsDisplay}</div></div>
-    </div>
-    <div class="section">Ventas por producto</div>
-    <table><thead><tr><th>Producto</th><th>Unid.</th><th>Total Bs.</th><th>Café</th></tr></thead><tbody>${rowsHTML}</tbody></table>
-    <div class="section">Actividad por hora</div>${hoursHTML}
-    <div class="footer">Arcafé · Generado el ${new Date().toLocaleString('es-BO')}</div>
-    </body></html>`;
+    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;margin:0;padding:32px;max-width:600px;margin:0 auto}h1{font-size:32px;color:#c9a84c;letter-spacing:0.06em;margin:0}.sub{font-size:11px;color:#999;letter-spacing:0.15em;text-transform:uppercase;margin-top:4px}.divider{border:none;border-top:1px solid #e0d4b8;margin:20px 0}.totals{display:flex;gap:16px;margin-bottom:20px}.tot-box{flex:1;border:1px solid #e0d4b8;border-radius:4px;padding:14px;background:#faf7f0}.tot-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px}.tot-val{font-size:26px;font-weight:700;color:#c9a84c}.tot-val.dark{color:#1a1a1a}.tot-val.grn{color:#5a9a60;font-size:22px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{padding:8px 12px;background:#f5f0e8;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:#999;text-align:left;border-bottom:2px solid #e0d4b8}th:nth-child(2){text-align:center}th:nth-child(3),th:nth-child(4){text-align:right}.section{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.18em;margin-bottom:10px}.footer{margin-top:32px;font-size:10px;color:#bbb;text-align:center;letter-spacing:0.08em}</style></head><body><h1>Arcafé</h1><div class="sub">Café al Paso Premium</div><hr class="divider"/><div style="font-size:12px;color:#999;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase">${loc}</div><div style="font-size:13px;color:#5a5048;margin-bottom:20px">${d.dateStr}</div><div class="totals"><div class="tot-box"><div class="tot-label">Total generado</div><div class="tot-val">Bs. ${d.totalBs.toFixed(2)}</div></div><div class="tot-box"><div class="tot-label">Unidades</div><div class="tot-val dark">${sales.length}</div></div><div class="tot-box"><div class="tot-label">Café utilizado</div><div class="tot-val grn">${gramsDisplay}</div></div></div><div class="section">Ventas por producto</div><table><thead><tr><th>Producto</th><th>Unid.</th><th>Total Bs.</th><th>Café</th></tr></thead><tbody>${rowsHTML}</tbody></table><div class="section">Actividad por hora</div>${hoursHTML}<div class="footer">Arcafé · Generado el ${new Date().toLocaleString('es-BO')}</div></body></html>`;
     const blob=new Blob([html],{type:'text/html;charset=utf-8'});
     const url=URL.createObjectURL(blob);
     const win=window.open(url,'_blank');
