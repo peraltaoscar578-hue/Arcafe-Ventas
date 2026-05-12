@@ -186,6 +186,36 @@
       <polyline points="14 2 14 8 20 8"/>
       <line x1="8" x2="16" y1="13" y2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="8" x2="10" y1="9" y2="9"/>
     </symbol>
+    <!-- hotdog -->
+    <symbol id="icon-hotdog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 11c0-2.8 2.2-5 5-5s5 2.2 5 5v2c0 2.8-2.2 5-5 5s-5-2.2-5-5v-2z"/>
+      <path d="M7 13h10"/>
+      <path d="M4 11h2M18 11h2"/>
+    </symbol>
+    <!-- empanada / pastry -->
+    <symbol id="icon-empanada" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M3 15c0-4.4 3.6-8 8-8h2c4.4 0 8 3.6 8 8v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
+      <path d="M8 15c1-2 2.5-3 4-3s3 1 4 3"/>
+    </symbol>
+    <!-- bag / bolsa -->
+    <symbol id="icon-bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+      <line x1="3" x2="21" y1="6" y2="6"/>
+      <path d="M16 10a4 4 0 0 1-8 0"/>
+    </symbol>
+    <!-- mate / gourd -->
+    <symbol id="icon-mate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3h8l1 7c0 3.9-2 7-5 7s-5-3.1-5-7L8 3z"/>
+      <line x1="12" x2="12" y1="17" y2="21"/>
+      <line x1="9" x2="15" y1="21" y2="21"/>
+      <path d="M17 7h2a2 2 0 0 1 0 4h-2"/>
+    </symbol>
+    <!-- combo -->
+    <symbol id="icon-combo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <circle cx="9" cy="12" r="4"/>
+      <path d="M15 8a4 4 0 0 1 0 8"/>
+      <path d="M5 20v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1"/>
+    </symbol>
   </defs>
 </svg>
 
@@ -295,10 +325,21 @@
 <script>
   const LOCS = { aeropuerto:{name:'Aeropuerto',svgHref:'#icon-plane'}, teleferico:{name:'Teleférico Morado',svgHref:'#icon-cable'} };
   const DEFAULTS = [
-    {name:'Americano',price:15,grams:20},{name:'Cappuccino',price:20,grams:20},
-    {name:'Latte',price:20,grams:20},{name:'Mocaccino',price:22,grams:20},
-    {name:'Iced Latte',price:22,grams:20},{name:'Espresso',price:12,grams:18},
-    {name:'Frappé',price:25,grams:20},{name:'Chocolate caliente',price:18,grams:0},
+    {name:'Americano',          price:12, grams:20,  cat:'cafe'},
+    {name:'Latte',              price:16, grams:20,  cat:'cafe'},
+    {name:'Cappuccino',         price:16, grams:20,  cat:'cafe'},
+    {name:'Café Doble',         price:19, grams:21,  cat:'cafe'},
+    {name:'Iced Latte',         price:16, grams:20,  cat:'cafe'},
+    {name:'Americano Frío',     price:12, grams:20,  cat:'cafe'},
+    {name:'Mocaccino',          price:18, grams:20,  cat:'cafe'},
+    {name:'Combo Hot Dog + Americano', price:20, grams:20, cat:'combo'},
+    {name:'Bolsa de Café',      price:50, grams:250, cat:'bolsa'},
+    {name:'Hot Dog Extralargo', price:12, grams:0,   cat:'hotdog'},
+    {name:'Hot Dog Chiquito',   price:6,  grams:0,   cat:'hotdog'},
+    {name:'Tucumana',           price:7,  grams:0,   cat:'empanada'},
+    {name:'Tucumana Rematada',  price:5,  grams:0,   cat:'empanada'},
+    {name:'Combo Café + Tucumana', price:15, grams:20, cat:'combo'},
+    {name:'Mate',               price:6,  grams:0,   cat:'mate'},
   ];
   const PROD_KEY  = 'arcafe_products_v5';
   const SALES_KEY = id => `arcafe_sales_v5_${id}`;
@@ -310,6 +351,18 @@
   function loadSales(id){ try{const s=localStorage.getItem(SALES_KEY(id));if(s)return JSON.parse(s);}catch(e){}return []; }
   function saveSales(){ try{localStorage.setItem(SALES_KEY(currentLoc),JSON.stringify(sales));}catch(e){} }
   function getCount(name){ return sales.filter(s=>s.name===name).length; }
+
+  function getCatIcon(cat){
+    const map = {
+      cafe:     '#icon-cup',
+      hotdog:   '#icon-hotdog',
+      empanada: '#icon-empanada',
+      bolsa:    '#icon-bolsa',
+      mate:     '#icon-mate',
+      combo:    '#icon-combo',
+    };
+    return map[cat] || '#icon-cup';
+  }
   function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
 
   function selectLocation(id){
@@ -340,7 +393,7 @@
       const sub=(cnt*(p.price||0)).toFixed(2),grUsd=cnt*(p.grams||0);
       const card=document.createElement('div'); card.className='product-card';
       card.innerHTML=`
-        <svg width="18" height="18" class="product-type-icon" style="color:var(--gold)"><use href="#icon-cup"/></svg>
+        <svg width="18" height="18" class="product-type-icon" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg>
         <div class="product-info">
           <div class="product-name">${p.name}</div>
           <div class="product-meta" onclick="openModal(${i})">
@@ -407,7 +460,7 @@
     const dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
     const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
     const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
-    const rows=products.map(p=>{const cnt=getCount(p.name);return{name:p.name,cnt,bs:cnt*(p.price||0),grams:cnt*(p.grams||0)};}).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
+    const rows=products.map(p=>{const cnt=getCount(p.name);return{name:p.name,cnt,bs:cnt*(p.price||0),grams:cnt*(p.grams||0),cat:p.cat||'cafe'};}).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
     const hourCounts={};
     sales.forEach(s=>{const h=new Date(s.ts).getHours();hourCounts[h]=(hourCounts[h]||0)+1;});
     const hours=Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
@@ -434,7 +487,10 @@
     }
     const rowsHTML=d.rows.length?d.rows.map(r=>`
       <div class="report-row">
-        <div class="report-row-name">${r.name}</div>
+        <div class="report-row-name" style="display:flex;align-items:center;gap:8px">
+          <svg width="14" height="14" style="color:var(--gold);opacity:0.6;flex-shrink:0"><use href="${getCatIcon(r.cat)}"/></svg>
+          ${r.name}
+        </div>
         <div class="report-row-right">
           <div class="report-row-units">${r.cnt} unid.</div>
           <div class="report-row-bs">Bs. ${r.bs.toFixed(2)}</div>
