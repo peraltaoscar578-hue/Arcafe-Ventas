@@ -1,153 +1,222 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Arcafé — Ventas</title>
-  <link rel="manifest" href="manifest.json" />
-  <meta name="theme-color" content="#080808" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#080808"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <style>
-    :root {
-      --gold: #c9a84c; --gold-light: #e8d08a; --gold-dim: rgba(201,168,76,0.10);
-      --gold-border: rgba(201,168,76,0.22); --bg: #080808; --bg2: #111111;
-      --bg3: #1c1c1c; --bg4: #242424; --text: #ede8df; --text2: #8a7e6e;
-      --text3: #5a5048; --danger: #a83232; --green: #5a9a60; --green-dim: rgba(90,154,96,0.10);
+    :root{
+      --gold:#c9a84c;--gold-dim:rgba(201,168,76,0.10);--gold-border:rgba(201,168,76,0.22);
+      --bg:#080808;--bg2:#111111;--bg3:#1c1c1c;--bg4:#242424;
+      --text:#ede8df;--text2:#8a7e6e;--text3:#5a5048;
+      --danger:#a83232;--danger-dim:rgba(168,50,50,0.10);
+      --green:#5a9a60;--green-dim:rgba(90,154,96,0.10);
+      --orange:#c47a2a;--orange-dim:rgba(196,122,42,0.10);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body { font-family: 'Jost', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-weight: 400; letter-spacing: 0.01em; }
+    *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+    body{font-family:'Jost',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-weight:400;letter-spacing:.01em}
+    .serif{font-family:'Cormorant Garamond',serif}
+    .screen{display:none}
+    .screen.active{display:block}
+    #screen-picker.active{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:2.5rem 1.5rem;text-align:center}
 
-    .screen { display: none; }
-    .screen.active { display: block; }
-    #screen-picker.active { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 2.5rem 1.5rem; text-align: center; }
+    /* ── PICKER ── */
+    .picker-logo-wrap{width:100px;height:100px;border-radius:50%;border:1px solid var(--gold-border);overflow:hidden;margin-bottom:1.75rem;box-shadow:0 0 40px rgba(201,168,76,.12)}
+    .picker-logo-wrap img{width:100%;height:100%;object-fit:cover}
+    .picker-brand{font-family:'Cormorant Garamond',serif;font-size:38px;font-weight:700;color:var(--gold);letter-spacing:.08em;line-height:1;margin-bottom:6px}
+    .picker-tagline{font-size:11px;color:var(--text3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:3rem}
+    .picker-label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;margin-bottom:1.25rem}
+    .location-btn{width:100%;max-width:300px;background:var(--bg2);border:1px solid var(--gold-border);border-radius:4px;padding:1.2rem 1.5rem;margin-bottom:10px;display:flex;align-items:center;gap:16px;cursor:pointer;text-align:left;position:relative;overflow:hidden}
+    .location-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--gold);transform:scaleY(0);transition:transform .2s;transform-origin:bottom}
+    .location-btn:active{background:var(--gold-dim);border-color:var(--gold)}
+    .location-btn:active::before{transform:scaleY(1)}
+    .location-name{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:.03em}
+    .location-sub{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em;margin-top:3px}
 
-    .picker-logo-wrap { width: 100px; height: 100px; border-radius: 50%; border: 1px solid var(--gold-border); overflow: hidden; margin-bottom: 1.75rem; box-shadow: 0 0 40px rgba(201,168,76,0.12); }
-    .picker-logo-wrap img { width: 100%; height: 100%; object-fit: cover; }
-    .picker-brand { font-family: 'Cormorant Garamond', serif; font-size: 38px; font-weight: 700; color: var(--gold); letter-spacing: 0.08em; line-height: 1; margin-bottom: 6px; }
-    .picker-tagline { font-size: 11px; font-weight: 500; color: var(--text3); letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 3rem; }
-    .picker-label { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 1.25rem; }
-    .location-btn { width: 100%; max-width: 300px; background: var(--bg2); border: 1px solid var(--gold-border); border-radius: 4px; padding: 1.2rem 1.5rem; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; cursor: pointer; text-align: left; position: relative; overflow: hidden; }
-    .location-btn::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:var(--gold); transform:scaleY(0); transition:transform 0.2s; transform-origin:bottom; }
-    .location-btn:active { background: var(--gold-dim); border-color: var(--gold); }
-    .location-btn:active::before { transform: scaleY(1); }
-    .location-icon-wrap { flex-shrink: 0; opacity: 0.7; }
-    .location-name { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 600; color: var(--text); letter-spacing: 0.03em; }
-    .location-sub { font-size: 10px; font-weight: 500; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; margin-top: 3px; }
+    /* ── HEADER ── */
+    header{background:var(--bg);border-bottom:1px solid var(--gold-border);padding:.9rem 1rem;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+    .header-logo{width:34px;height:34px;border-radius:50%;overflow:hidden;border:1px solid var(--gold-border);flex-shrink:0}
+    .header-logo img{width:100%;height:100%;object-fit:cover}
+    .header-text{flex:1}
+    .header-text h1{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:700;color:var(--gold);letter-spacing:.06em;line-height:1}
+    .header-text p{font-size:9px;color:var(--text3);letter-spacing:.08em;margin-top:2px;text-transform:uppercase}
+    .hdr-btns{display:flex;gap:5px;flex-shrink:0}
+    .hdr-btn{background:transparent;border:1px solid var(--gold-border);border-radius:3px;padding:5px 8px;font-size:9px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.1em;display:flex;align-items:center;gap:4px;white-space:nowrap}
+    .hdr-btn:active{background:var(--gold-dim);color:var(--gold);border-color:var(--gold)}
+    .hdr-btn.active-tab{background:var(--gold-dim);color:var(--gold);border-color:var(--gold)}
 
-    header { background: var(--bg); border-bottom: 1px solid var(--gold-border); padding: 0.9rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 12px; }
-    .header-logo { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 1px solid var(--gold-border); flex-shrink: 0; }
-    .header-logo img { width: 100%; height: 100%; object-fit: cover; }
-    .header-text { flex: 1; }
-    .header-text h1 { font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.06em; line-height: 1; }
-    .header-text p { font-size: 10px; color: var(--text3); letter-spacing: 0.08em; margin-top: 2px; text-transform: uppercase; }
-    .hdr-btns { display: flex; gap: 6px; }
-    .hdr-btn { background: transparent; border: 1px solid var(--gold-border); border-radius: 3px; padding: 6px 10px; font-size: 10px; font-weight: 600; color: var(--text2); cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 5px; }
-    .hdr-btn:active { background: var(--gold-dim); color: var(--gold); border-color: var(--gold); }
+    /* ── LOC BADGE ── */
+    .loc-badge{margin:.85rem 1.25rem 0;border-bottom:1px solid var(--gold-border);padding-bottom:.85rem;display:flex;align-items:center;gap:10px}
+    .loc-badge-text{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.15em}
+    .loc-badge-name{font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--gold);font-weight:600}
 
-    .loc-badge { margin: 0.85rem 1.25rem 0; border-bottom: 1px solid var(--gold-border); padding-bottom: 0.85rem; display: flex; align-items: center; gap: 10px; }
-    .loc-badge-text { font-size: 10px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.15em; }
-    .loc-badge-name { font-family: 'Cormorant Garamond', serif; font-size: 18px; color: var(--gold); font-weight: 600; }
+    /* ── SUMMARY ── */
+    .summary{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;margin:1.25rem 1.25rem 0;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden}
+    .metric{background:var(--bg2);padding:1rem 1.1rem}
+    .metric.span2{grid-column:span 2;border-top:1px solid var(--gold-border)}
+    .metric.highlight{background:var(--gold-dim);grid-column:span 2;border-top:1px solid var(--gold-border);display:flex;align-items:center;justify-content:space-between}
+    .metric-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:6px}
+    .metric-value{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:700;color:var(--text);line-height:1}
+    .metric.highlight .metric-value{color:var(--gold);font-size:34px}
+    .metric-value.small{font-size:16px;font-family:'Jost',sans-serif;font-weight:500;padding-top:2px}
+    .metric-value.medium{font-size:24px;color:var(--green)}
 
-    .summary { display: grid; grid-template-columns: repeat(2,1fr); gap: 1px; margin: 1.25rem 1.25rem 0; border: 1px solid var(--gold-border); border-radius: 4px; overflow: hidden; }
-    .metric { background: var(--bg2); padding: 1rem 1.1rem; }
-    .metric.span2 { grid-column: span 2; border-top: 1px solid var(--gold-border); }
-    .metric.highlight { background: var(--gold-dim); grid-column: span 2; border-top: 1px solid var(--gold-border); display: flex; align-items: center; justify-content: space-between; }
-    .metric-label { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 6px; }
-    .metric-value { font-family: 'Cormorant Garamond', serif; font-size: 32px; font-weight: 700; color: var(--text); line-height: 1; }
-    .metric.highlight .metric-value { color: var(--gold); font-size: 34px; }
-    .metric-value.small { font-size: 16px; font-family: 'Jost', sans-serif; font-weight: 500; padding-top: 2px; }
-    .metric-value.medium { font-size: 24px; color: var(--green); }
+    /* ── SECTION TITLE ── */
+    .section-title{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;padding:1.5rem 1.25rem .6rem;display:flex;align-items:center;gap:10px}
+    .section-title::after{content:'';flex:1;height:1px;background:var(--gold-border)}
 
-    .section-title { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; padding: 1.5rem 1.25rem 0.6rem; display: flex; align-items: center; gap: 10px; }
-    .section-title::after { content:''; flex:1; height:1px; background:var(--gold-border); }
+    /* ── PRODUCT LIST ── */
+    .product-list{display:flex;flex-direction:column;padding:0 1.25rem;margin-bottom:1.5rem;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden}
+    .product-card{background:var(--bg2);padding:.9rem 1rem;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(201,168,76,.08)}
+    .product-card:last-child{border-bottom:none}
+    .product-type-icon{flex-shrink:0;opacity:.5}
+    .product-info{flex:1;min-width:0}
+    .product-name{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:.02em}
+    .product-meta{font-size:10px;color:var(--text3);margin-top:3px;cursor:pointer;display:flex;align-items:center;gap:6px}
+    .product-meta span{color:var(--gold)}
+    .product-sub{font-size:10px;color:var(--text3);margin-top:2px}
+    .controls{display:flex;align-items:center;gap:10px;flex-shrink:0}
+    .btn{width:30px;height:30px;border-radius:50%;border:1px solid var(--gold-border);background:transparent;color:var(--gold);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Jost',sans-serif}
+    .btn:active{background:var(--gold-dim);transform:scale(.92)}
+    .btn:disabled{opacity:.2;cursor:default}
+    .count{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;min-width:26px;text-align:center;color:var(--text);line-height:1}
+    .delete-btn{width:24px;height:24px;border-radius:50%;border:1px solid rgba(168,50,50,.25);background:transparent;color:var(--danger);font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;opacity:.45}
+    .delete-btn:active{opacity:1}
 
-    .product-list { display: flex; flex-direction: column; padding: 0 1.25rem; margin-bottom: 1.5rem; border: 1px solid var(--gold-border); border-radius: 4px; overflow: hidden; }
-    .product-card { background: var(--bg2); padding: 0.9rem 1rem; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(201,168,76,0.08); }
-    .product-card:last-child { border-bottom: none; }
-    .product-type-icon { flex-shrink: 0; opacity: 0.5; }
-    .product-info { flex: 1; min-width: 0; }
-    .product-name { font-family: 'Cormorant Garamond', serif; font-size: 17px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.02em; }
-    .product-meta { font-size: 10px; color: var(--text3); margin-top: 3px; letter-spacing: 0.08em; cursor: pointer; display: flex; align-items: center; gap: 6px; }
-    .product-meta span { color: var(--gold); }
-    .product-sub { font-size: 10px; color: var(--text3); margin-top: 2px; letter-spacing: 0.05em; }
-    .controls { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
-    .btn { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--gold-border); background: transparent; color: var(--gold); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-weight: 300; font-family: 'Jost', sans-serif; }
-    .btn:active { background: var(--gold-dim); transform: scale(0.92); }
-    .btn:disabled { opacity: 0.2; cursor: default; }
-    .count { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; min-width: 26px; text-align: center; color: var(--text); line-height: 1; }
-    .delete-btn { width: 24px; height: 24px; border-radius: 50%; border: 1px solid rgba(168,50,50,0.25); background: transparent; color: var(--danger); font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; opacity: 0.45; font-family: 'Jost', sans-serif; }
-    .delete-btn:active { opacity: 1; }
+    /* ── ADD ── */
+    .add-section{margin:0 1.25rem .75rem;border:1px solid var(--gold-border);border-radius:4px;padding:1rem;background:var(--bg2)}
+    .add-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:10px}
+    .add-row{display:flex;gap:8px;margin-bottom:8px}
+    .add-row:last-child{margin-bottom:0}
+    .add-input{flex:1;border:none;border-bottom:1px solid var(--gold-border);background:transparent;padding:8px 4px;font-size:14px;color:var(--text);outline:none;font-family:'Jost',sans-serif}
+    .add-input::placeholder{color:var(--text3);font-size:13px}
+    .small-input{width:80px;border:none;border-bottom:1px solid var(--gold-border);background:transparent;padding:8px 4px;font-size:14px;color:var(--gold);outline:none;font-family:'Jost',sans-serif}
+    .small-input::placeholder{color:var(--text3);font-size:11px}
+    .add-btn{background:var(--gold);color:#080808;border:none;border-radius:3px;padding:10px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;width:100%;letter-spacing:.15em;text-transform:uppercase}
+    .add-btn:active{opacity:.85}
+    .reset-btn{display:block;margin:.25rem auto .5rem;background:transparent;border:none;color:var(--text3);font-size:10px;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.12em;text-transform:uppercase;text-decoration:underline;text-underline-offset:3px}
+    .empty{text-align:center;color:var(--text3);font-size:13px;padding:1.5rem}
 
-    .add-section { margin: 0 1.25rem 0.75rem; border: 1px solid var(--gold-border); border-radius: 4px; padding: 1rem; background: var(--bg2); }
-    .add-label { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 10px; }
-    .add-row { display: flex; gap: 8px; margin-bottom: 8px; }
-    .add-row:last-child { margin-bottom: 0; }
-    .add-input { flex: 1; border: none; border-bottom: 1px solid var(--gold-border); background: transparent; padding: 8px 4px; font-size: 14px; color: var(--text); outline: none; font-family: 'Jost', sans-serif; }
-    .add-input::placeholder { color: var(--text3); font-size: 13px; }
-    .small-input { width: 80px; border: none; border-bottom: 1px solid var(--gold-border); background: transparent; padding: 8px 4px; font-size: 14px; color: var(--gold); outline: none; font-family: 'Jost', sans-serif; }
-    .small-input::placeholder { color: var(--text3); font-size: 11px; }
-    .add-btn { background: var(--gold); color: #080808; border: none; border-radius: 3px; padding: 10px 0; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Jost', sans-serif; width: 100%; letter-spacing: 0.15em; text-transform: uppercase; }
-    .add-btn:active { opacity: 0.85; }
-    .reset-btn { display: block; margin: 0.25rem auto 0.5rem; background: transparent; border: none; color: var(--text3); font-size: 10px; cursor: pointer; font-family: 'Jost', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; text-decoration: underline; text-underline-offset: 3px; }
-    .empty { text-align: center; color: var(--text3); font-size: 13px; padding: 1.5rem; }
+    /* ── INVENTORY SCREEN ── */
+    #screen-inventory{padding-bottom:3rem}
+    .inv-header{background:var(--bg);border-bottom:1px solid var(--gold-border);padding:.9rem 1.25rem;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+    .inv-header h2{flex:1;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:.04em}
+    .inv-tabs{display:flex;gap:1px;margin:1rem 1.25rem 0;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden}
+    .inv-tab{flex:1;padding:9px 6px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;text-align:center;cursor:pointer;background:var(--bg2);color:var(--text3);font-family:'Jost',sans-serif;border:none}
+    .inv-tab.active{background:var(--gold-dim);color:var(--gold)}
+    .inv-tab:active{background:var(--gold-dim)}
 
-    #screen-report { padding-bottom: 3rem; }
-    .report-header { background: var(--bg); border-bottom: 1px solid var(--gold-border); padding: 0.9rem 1.25rem; position: sticky; top: 0; z-index: 10; display: flex; align-items: center; gap: 10px; }
-    .report-header h2 { flex: 1; font-family: 'Cormorant Garamond', serif; font-size: 20px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; }
-    .back-btn { background: transparent; border: 1px solid var(--gold-border); border-radius: 3px; padding: 6px 12px; font-size: 10px; font-weight: 600; color: var(--text2); cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; letter-spacing: 0.1em; }
-    .back-btn:active { background: var(--gold-dim); }
-    .download-row { display: flex; gap: 8px; margin: 1.25rem 1.25rem 0; }
-    .dl-btn { flex: 1; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 11px; border-radius: 4px; font-size: 11px; font-weight: 600; font-family: 'Jost', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; cursor: pointer; border: none; }
-    .dl-btn.pdf { background: var(--gold); color: #080808; }
-    .dl-btn.csv { background: transparent; border: 1px solid var(--gold-border); color: var(--text2); }
-    .dl-btn:active { opacity: 0.8; transform: scale(0.98); }
-    .report-body { padding: 1.25rem; }
-    .report-totals { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; border: 1px solid var(--gold-border); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
-    .report-total-cell { background: var(--bg2); padding: 1rem; }
-    .report-total-cell.gold { background: var(--gold-dim); grid-column: span 2; border-bottom: 1px solid var(--gold-border); }
-    .report-total-cell.green { background: var(--green-dim); border-top: 1px solid rgba(90,154,96,0.2); grid-column: span 2; }
-    .rtc-label { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 6px; }
-    .rtc-value { font-family: 'Cormorant Garamond', serif; font-size: 30px; font-weight: 700; color: var(--gold); line-height: 1; }
-    .rtc-value.white { color: var(--text); }
-    .rtc-value.grn { color: var(--green); font-size: 26px; }
-    .report-section-title { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.2em; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 10px; }
-    .report-section-title::after { content:''; flex:1; height:1px; background:var(--gold-border); }
-    .report-table { border: 1px solid var(--gold-border); border-radius: 4px; overflow: hidden; margin-bottom: 1.25rem; }
-    .report-row { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1rem; background: var(--bg2); border-bottom: 1px solid rgba(201,168,76,0.07); }
-    .report-row:last-child { border-bottom: none; }
-    .report-row-name { font-family: 'Cormorant Garamond', serif; font-size: 16px; color: var(--text); }
-    .report-row-right { text-align: right; }
-    .report-row-units { font-size: 10px; color: var(--text3); letter-spacing: 0.05em; }
-    .report-row-bs { font-size: 14px; font-weight: 600; color: var(--gold); }
-    .report-row-grams { font-size: 10px; color: var(--green); margin-top: 1px; }
-    .chart-wrap { overflow-x: auto; }
-    .chart { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding: 0 2px; min-width: max-content; }
-    .chart-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .chart-bar-wrap { display: flex; align-items: flex-end; height: 80px; }
-    .chart-bar { width: 24px; background: var(--gold); border-radius: 2px 2px 0 0; min-height: 3px; opacity: 0.85; }
-    .chart-bar.empty { background: var(--bg4); opacity: 1; }
-    .chart-label { font-size: 9px; color: var(--text3); }
-    .chart-val { font-size: 9px; color: var(--gold); font-weight: 600; min-height: 12px; }
-    .chart-empty { font-size: 13px; color: var(--text3); text-align: center; padding: 1.5rem; }
+    /* stock cards */
+    .stock-list{display:flex;flex-direction:column;padding:0 1.25rem;margin-bottom:1rem;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden}
+    .stock-card{background:var(--bg2);padding:.85rem 1rem;display:flex;align-items:center;gap:12px;border-bottom:1px solid rgba(201,168,76,.08)}
+    .stock-card:last-child{border-bottom:none}
+    .stock-info{flex:1;min-width:0}
+    .stock-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text)}
+    .stock-detail{font-size:10px;color:var(--text3);margin-top:2px}
+    .stock-qty{text-align:right;flex-shrink:0}
+    .stock-qty-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;line-height:1}
+    .stock-qty-val.ok{color:var(--green)}
+    .stock-qty-val.warn{color:var(--orange)}
+    .stock-qty-val.critical{color:var(--danger)}
+    .stock-qty-unit{font-size:9px;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-top:2px}
+    .adj-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--gold-border);background:transparent;color:var(--gold);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+    .adj-btn:active{background:var(--gold-dim)}
 
-    .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.82); z-index: 100; align-items: flex-end; justify-content: center; }
-    .modal-bg.open { display: flex; }
-    .modal { background: var(--bg2); border: 1px solid var(--gold-border); border-top: 2px solid var(--gold); padding: 1.5rem 1.25rem 2.5rem; width: 100%; max-width: 480px; }
-    .modal h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 700; color: var(--gold); letter-spacing: 0.04em; margin-bottom: 1.25rem; }
-    .modal-field { margin-bottom: 1rem; }
-    .modal-field-label { font-size: 9px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.18em; margin-bottom: 8px; }
-    .modal-field input { width: 100%; border: none; border-bottom: 1px solid var(--gold-border); background: transparent; padding: 8px 4px; font-size: 16px; color: var(--text); outline: none; font-family: 'Jost', sans-serif; }
-    .modal-field input:focus { border-bottom-color: var(--gold); }
-    .modal-save { background: var(--gold); color: #080808; border: none; border-radius: 3px; padding: 12px 0; font-size: 11px; font-weight: 700; cursor: pointer; font-family: 'Jost', sans-serif; width: 100%; letter-spacing: 0.15em; text-transform: uppercase; margin-top: 4px; }
-    .modal-cancel { display: block; margin: 0.85rem auto 0; background: transparent; border: none; color: var(--text3); font-size: 10px; cursor: pointer; font-family: 'Jost', sans-serif; text-transform: uppercase; letter-spacing: 0.12em; }
+    /* movements */
+    .mov-list{display:flex;flex-direction:column;padding:0 1.25rem;margin-bottom:1rem;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden}
+    .mov-card{background:var(--bg2);padding:.75rem 1rem;display:flex;align-items:center;gap:10px;border-bottom:1px solid rgba(201,168,76,.07)}
+    .mov-card:last-child{border-bottom:none}
+    .mov-info{flex:1;min-width:0}
+    .mov-name{font-size:13px;color:var(--text)}
+    .mov-detail{font-size:10px;color:var(--text3);margin-top:2px}
+    .mov-qty{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;flex-shrink:0}
+    .mov-qty.pos{color:var(--green)}
+    .mov-qty.neg{color:var(--danger)}
+    .mov-type-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+    /* session banner */
+    .session-banner{margin:1rem 1.25rem 0;border-radius:4px;padding:.85rem 1rem;display:flex;align-items:center;justify-content:space-between;gap:10px}
+    .session-banner.open{background:var(--green-dim);border:1px solid rgba(90,154,96,.3)}
+    .session-banner.closed{background:var(--orange-dim);border:1px solid rgba(196,122,42,.3)}
+    .session-banner-text p:first-child{font-size:12px;font-weight:600;letter-spacing:.05em}
+    .session-banner-text p:last-child{font-size:10px;color:var(--text3);margin-top:2px}
+    .session-btn{background:var(--gold);color:#080808;border:none;border-radius:3px;padding:7px 14px;font-size:10px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+    .session-btn.danger{background:var(--danger);color:#fff}
+    .session-btn:active{opacity:.85}
+
+    /* ── REPORT SCREEN ── */
+    #screen-report{padding-bottom:3rem}
+    .report-header{background:var(--bg);border-bottom:1px solid var(--gold-border);padding:.9rem 1.25rem;position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px}
+    .report-header h2{flex:1;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--gold);letter-spacing:.04em}
+    .back-btn{background:transparent;border:1px solid var(--gold-border);border-radius:3px;padding:6px 12px;font-size:10px;font-weight:600;color:var(--text2);cursor:pointer;font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.1em}
+    .back-btn:active{background:var(--gold-dim)}
+    .download-row{display:flex;gap:8px;margin:1.25rem 1.25rem 0}
+    .dl-btn{flex:1;display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:4px;font-size:11px;font-weight:600;font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.12em;cursor:pointer;border:none}
+    .dl-btn.pdf{background:var(--gold);color:#080808}
+    .dl-btn.csv{background:transparent;border:1px solid var(--gold-border);color:var(--text2)}
+    .dl-btn:active{opacity:.8;transform:scale(.98)}
+    .report-body{padding:1.25rem}
+    .report-totals{display:grid;grid-template-columns:1fr 1fr;gap:1px;border:1px solid var(--gold-border);border-radius:4px;overflow:hidden;margin-bottom:1.25rem}
+    .report-total-cell{background:var(--bg2);padding:1rem}
+    .report-total-cell.gold{background:var(--gold-dim);grid-column:span 2;border-bottom:1px solid var(--gold-border)}
+    .report-total-cell.green{background:var(--green-dim);border-top:1px solid rgba(90,154,96,.2);grid-column:span 2}
+    .rtc-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:6px}
+    .rtc-value{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:700;color:var(--gold);line-height:1}
+    .rtc-value.white{color:var(--text)}
+    .rtc-value.grn{color:var(--green);font-size:26px}
+    .report-section-title{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.2em;margin-bottom:.6rem;display:flex;align-items:center;gap:10px}
+    .report-section-title::after{content:'';flex:1;height:1px;background:var(--gold-border)}
+    .report-table{border:1px solid var(--gold-border);border-radius:4px;overflow:hidden;margin-bottom:1.25rem}
+    .report-row{display:flex;align-items:center;justify-content:space-between;padding:.75rem 1rem;background:var(--bg2);border-bottom:1px solid rgba(201,168,76,.07)}
+    .report-row:last-child{border-bottom:none}
+    .report-row-name{font-family:'Cormorant Garamond',serif;font-size:16px;color:var(--text);display:flex;align-items:center;gap:8px}
+    .report-row-right{text-align:right}
+    .report-row-units{font-size:10px;color:var(--text3)}
+    .report-row-bs{font-size:14px;font-weight:600;color:var(--gold)}
+    .report-row-grams{font-size:10px;color:var(--green);margin-top:1px}
+    .chart-wrap{overflow-x:auto}
+    .chart{display:flex;align-items:flex-end;gap:6px;height:110px;padding:0 2px;min-width:max-content}
+    .chart-col{display:flex;flex-direction:column;align-items:center;gap:4px}
+    .chart-bar-wrap{display:flex;align-items:flex-end;height:80px}
+    .chart-bar{width:24px;background:var(--gold);border-radius:2px 2px 0 0;min-height:3px;opacity:.85}
+    .chart-bar.empty{background:var(--bg4);opacity:1}
+    .chart-label{font-size:9px;color:var(--text3)}
+    .chart-val{font-size:9px;color:var(--gold);font-weight:600;min-height:12px}
+    .chart-empty{font-size:13px;color:var(--text3);text-align:center;padding:1.5rem}
+
+    /* ── MODAL ── */
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:100;align-items:flex-end;justify-content:center}
+    .modal-bg.open{display:flex}
+    .modal{background:var(--bg2);border:1px solid var(--gold-border);border-top:2px solid var(--gold);padding:1.5rem 1.25rem 2.5rem;width:100%;max-width:480px}
+    .modal h3{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold);letter-spacing:.04em;margin-bottom:1.25rem}
+    .modal-field{margin-bottom:1rem}
+    .modal-field-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.18em;margin-bottom:8px}
+    .modal-field input,.modal-field select,.modal-field textarea{width:100%;border:none;border-bottom:1px solid var(--gold-border);background:transparent;padding:8px 4px;font-size:15px;color:var(--text);outline:none;font-family:'Jost',sans-serif;border-radius:0}
+    .modal-field select option{background:var(--bg2);color:var(--text)}
+    .modal-field input:focus,.modal-field select:focus{border-bottom-color:var(--gold)}
+    .modal-save{background:var(--gold);color:#080808;border:none;border-radius:3px;padding:12px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'Jost',sans-serif;width:100%;letter-spacing:.15em;text-transform:uppercase;margin-top:4px}
+    .modal-cancel{display:block;margin:.85rem auto 0;background:transparent;border:none;color:var(--text3);font-size:10px;cursor:pointer;font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.12em}
+
+    /* closing report table */
+    .close-table{width:100%;border-collapse:collapse;margin-bottom:1rem}
+    .close-table th{font-size:9px;text-transform:uppercase;letter-spacing:.12em;color:var(--text3);padding:6px 8px;text-align:left;border-bottom:1px solid var(--gold-border)}
+    .close-table td{font-size:13px;padding:7px 8px;border-bottom:1px solid rgba(201,168,76,.06);color:var(--text)}
+    .close-table td.num{text-align:right;font-family:'Cormorant Garamond',serif;font-size:15px}
+    .close-table td.neg{color:var(--danger)}
+    .close-table td.warn{color:var(--orange)}
+    .close-table td.ok{color:var(--green)}
   </style>
 </head>
 <body>
 
+<!-- SVG ICONS -->
 <svg style="display:none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <symbol id="icon-cup" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
@@ -186,71 +255,75 @@
       <polyline points="14 2 14 8 20 8"/>
       <line x1="8" x2="16" y1="13" y2="13"/><line x1="8" x2="16" y1="17" y2="17"/><line x1="8" x2="10" y1="9" y2="9"/>
     </symbol>
-    <!-- hotdog -->
     <symbol id="icon-hotdog" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M7 11c0-2.8 2.2-5 5-5s5 2.2 5 5v2c0 2.8-2.2 5-5 5s-5-2.2-5-5v-2z"/>
-      <path d="M7 13h10"/>
-      <path d="M4 11h2M18 11h2"/>
+      <path d="M7 13h10"/><path d="M4 11h2M18 11h2"/>
     </symbol>
-    <!-- empanada / pastry -->
     <symbol id="icon-empanada" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M3 15c0-4.4 3.6-8 8-8h2c4.4 0 8 3.6 8 8v1a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-1z"/>
       <path d="M8 15c1-2 2.5-3 4-3s3 1 4 3"/>
     </symbol>
-    <!-- bag / bolsa -->
     <symbol id="icon-bolsa" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
       <line x1="3" x2="21" y1="6" y2="6"/>
       <path d="M16 10a4 4 0 0 1-8 0"/>
     </symbol>
-    <!-- mate / gourd -->
     <symbol id="icon-mate" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
       <path d="M8 3h8l1 7c0 3.9-2 7-5 7s-5-3.1-5-7L8 3z"/>
-      <line x1="12" x2="12" y1="17" y2="21"/>
-      <line x1="9" x2="15" y1="21" y2="21"/>
+      <line x1="12" x2="12" y1="17" y2="21"/><line x1="9" x2="15" y1="21" y2="21"/>
       <path d="M17 7h2a2 2 0 0 1 0 4h-2"/>
     </symbol>
-    <!-- combo -->
     <symbol id="icon-combo" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
-      <circle cx="9" cy="12" r="4"/>
-      <path d="M15 8a4 4 0 0 1 0 8"/>
+      <circle cx="9" cy="12" r="4"/><path d="M15 8a4 4 0 0 1 0 8"/>
       <path d="M5 20v-1a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4v1"/>
+    </symbol>
+    <symbol id="icon-box" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+      <path d="m3.3 7 8.7 5 8.7-5"/><line x1="12" x2="12" y1="22" y2="12"/>
+    </symbol>
+    <symbol id="icon-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/>
+    </symbol>
+    <symbol id="icon-warn" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/>
+      <line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/>
     </symbol>
   </defs>
 </svg>
 
-<!-- PICKER -->
+<!-- ── PICKER ── -->
 <div id="screen-picker" class="screen active">
-  <div class="picker-logo-wrap"><img src="logo.png" alt="Arcafé" /></div>
+  <div class="picker-logo-wrap"><img src="logo.png" alt="Arcafé"/></div>
   <div class="picker-brand">Arcafé</div>
   <div class="picker-tagline">Café al Paso Premium</div>
   <div class="picker-label">Selecciona el local</div>
   <button class="location-btn" onclick="selectLocation('aeropuerto')">
-    <div class="location-icon-wrap"><svg width="28" height="28" style="color:var(--gold)"><use href="#icon-plane"/></svg></div>
+    <div style="flex-shrink:0;opacity:.7"><svg width="28" height="28" style="color:var(--gold)"><use href="#icon-plane"/></svg></div>
     <div><div class="location-name">Aeropuerto</div><div class="location-sub">Registro de ventas</div></div>
   </button>
   <button class="location-btn" onclick="selectLocation('teleferico')">
-    <div class="location-icon-wrap"><svg width="28" height="28" style="color:var(--gold)"><use href="#icon-cable"/></svg></div>
+    <div style="flex-shrink:0;opacity:.7"><svg width="28" height="28" style="color:var(--gold)"><use href="#icon-cable"/></svg></div>
     <div><div class="location-name">Teleférico Morado</div><div class="location-sub">Registro de ventas</div></div>
   </button>
 </div>
 
-<!-- MAIN APP -->
+<!-- ── MAIN APP ── -->
 <div id="screen-app" class="screen">
   <header>
-    <div class="header-logo"><img src="logo.png" alt="Arcafé" /></div>
+    <div class="header-logo"><img src="logo.png" alt="Arcafé"/></div>
     <div class="header-text">
       <h1>Arcafé</h1>
       <p id="fecha"></p>
     </div>
     <div class="hdr-btns">
-      <button class="hdr-btn" onclick="showReport()"><svg width="13" height="13" style="color:currentColor"><use href="#icon-chart"/></svg> Informe</button>
-      <button class="hdr-btn" onclick="goBack()"><svg width="13" height="13" style="color:currentColor"><use href="#icon-switch"/></svg> Local</button>
+      <button class="hdr-btn" onclick="showInventory()"><svg width="12" height="12" style="color:currentColor"><use href="#icon-box"/></svg> Stock</button>
+      <button class="hdr-btn" onclick="showReport()"><svg width="12" height="12" style="color:currentColor"><use href="#icon-chart"/></svg> Informe</button>
+      <button class="hdr-btn" onclick="goBack()"><svg width="12" height="12" style="color:currentColor"><use href="#icon-switch"/></svg> Local</button>
     </div>
   </header>
 
   <div class="loc-badge">
-    <svg width="16" height="16" style="color:var(--gold);opacity:0.7"><use id="loc-svg-use" href="#icon-plane"/></svg>
+    <svg width="16" height="16" style="color:var(--gold);opacity:.7"><use id="loc-svg-use" href="#icon-plane"/></svg>
     <div><div class="loc-badge-text">Local activo</div><div class="loc-badge-name" id="loc-name"></div></div>
   </div>
 
@@ -265,11 +338,11 @@
     </div>
     <div class="metric highlight">
       <div><div class="metric-label">Total del día</div><div class="metric-value" id="total-dinero">Bs. 0.00</div></div>
-      <svg width="32" height="32" style="color:var(--gold);opacity:0.4"><use href="#icon-cup"/></svg>
+      <svg width="32" height="32" style="color:var(--gold);opacity:.4"><use href="#icon-cup"/></svg>
     </div>
     <div class="metric span2" style="display:flex;align-items:center;justify-content:space-between;background:var(--green-dim)">
       <div><div class="metric-label">Café utilizado hoy</div><div class="metric-value medium" id="total-grams">0 g</div></div>
-      <svg width="28" height="28" style="color:var(--green);opacity:0.5"><use href="#icon-bean"/></svg>
+      <svg width="28" height="28" style="color:var(--green);opacity:.5"><use href="#icon-bean"/></svg>
     </div>
   </div>
 
@@ -278,17 +351,44 @@
 
   <div class="add-section">
     <div class="add-label">Nuevo producto</div>
-    <div class="add-row"><input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40" /></div>
+    <div class="add-row"><input class="add-input" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40"/></div>
     <div class="add-row">
-      <input class="small-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs." />
-      <input class="small-input" id="new-grams" type="number" min="0" step="1" placeholder="g café" />
+      <input class="small-input" id="new-price" type="number" min="0" step="0.5" placeholder="Bs."/>
+      <input class="small-input" id="new-grams" type="number" min="0" step="1" placeholder="g café"/>
       <button class="add-btn" onclick="addProduct()">Agregar</button>
     </div>
   </div>
   <button class="reset-btn" onclick="resetAll()">Reiniciar registro del día</button>
 </div>
 
-<!-- REPORT -->
+<!-- ── INVENTORY ── -->
+<div id="screen-inventory" class="screen">
+  <div class="inv-header">
+    <button class="back-btn" onclick="showApp()">← Volver</button>
+    <h2 id="inv-title">Inventario</h2>
+  </div>
+
+  <!-- session banner -->
+  <div id="session-banner" class="session-banner closed">
+    <div class="session-banner-text">
+      <p id="session-status-text">Sin apertura hoy</p>
+      <p id="session-status-sub">Registra el inventario inicial para comenzar</p>
+    </div>
+    <button class="session-btn" id="session-action-btn" onclick="handleSessionAction()">Apertura</button>
+  </div>
+
+  <div class="inv-tabs">
+    <button class="inv-tab active" onclick="switchInvTab('stock')">Stock</button>
+    <button class="inv-tab" onclick="switchInvTab('adjust')">Ajustes</button>
+    <button class="inv-tab" onclick="switchInvTab('movements')">Movimientos</button>
+  </div>
+
+  <div id="inv-tab-stock"></div>
+  <div id="inv-tab-adjust" style="display:none"></div>
+  <div id="inv-tab-movements" style="display:none"></div>
+</div>
+
+<!-- ── REPORT ── -->
 <div id="screen-report" class="screen">
   <div class="report-header">
     <button class="back-btn" onclick="showApp()">← Volver</button>
@@ -296,257 +396,748 @@
   </div>
   <div class="download-row">
     <button class="dl-btn pdf" onclick="downloadPDF()">
-      <svg width="14" height="14" style="color:currentColor"><use href="#icon-pdf"/></svg> Descargar PDF
+      <svg width="14" height="14" style="color:currentColor"><use href="#icon-pdf"/></svg> PDF
     </button>
     <button class="dl-btn csv" onclick="downloadCSV()">
-      <svg width="14" height="14" style="color:currentColor"><use href="#icon-csv"/></svg> Descargar CSV
+      <svg width="14" height="14" style="color:currentColor"><use href="#icon-csv"/></svg> CSV
     </button>
   </div>
   <div class="report-body" id="report-body"></div>
 </div>
 
-<!-- MODAL -->
+<!-- MODAL producto -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
     <h3 id="modal-title">Editar producto</h3>
-    <div class="modal-field">
-      <div class="modal-field-label">Precio (Bs.)</div>
-      <input type="number" id="modal-price" min="0" step="0.5" placeholder="0.00" />
-    </div>
-    <div class="modal-field">
-      <div class="modal-field-label">Gramos de café</div>
-      <input type="number" id="modal-grams" min="0" step="1" placeholder="0 si no usa café" />
-    </div>
+    <div class="modal-field"><div class="modal-field-label">Precio (Bs.)</div><input type="number" id="modal-price" min="0" step="0.5" placeholder="0.00"/></div>
+    <div class="modal-field"><div class="modal-field-label">Gramos de café</div><input type="number" id="modal-grams" min="0" step="1" placeholder="0 si no usa café"/></div>
     <button class="modal-save" onclick="saveModal()">Guardar cambios</button>
     <button class="modal-cancel" onclick="closeModal()">Cancelar</button>
   </div>
 </div>
 
+<!-- MODAL ajuste inventario -->
+<div class="modal-bg" id="adj-modal-bg">
+  <div class="modal">
+    <h3 id="adj-modal-title">Ajuste de stock</h3>
+    <div class="modal-field">
+      <div class="modal-field-label">Tipo de ajuste</div>
+      <select id="adj-type">
+        <option value="restock">Reposición (+)</option>
+        <option value="waste">Desperdicio (−)</option>
+        <option value="adjustment">Corrección manual</option>
+        <option value="damage">Producto dañado (−)</option>
+      </select>
+    </div>
+    <div class="modal-field" id="adj-qty-field">
+      <div class="modal-field-label" id="adj-qty-label">Cantidad</div>
+      <input type="number" id="adj-qty" min="0" step="0.1" placeholder="0"/>
+    </div>
+    <div class="modal-field" id="adj-sachets-field" style="display:none">
+      <div class="modal-field-label">Sachets de leche (1 sachet = 1000ml)</div>
+      <input type="number" id="adj-sachets" min="0" step="1" placeholder="Nro. de sachets"/>
+    </div>
+    <div class="modal-field">
+      <div class="modal-field-label">Motivo (opcional)</div>
+      <input type="text" id="adj-reason" placeholder="Ej: reposición de turno"/>
+    </div>
+    <button class="modal-save" onclick="saveAdjustment()">Aplicar ajuste</button>
+    <button class="modal-cancel" onclick="closeAdjModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL apertura -->
+<div class="modal-bg" id="open-modal-bg">
+  <div class="modal">
+    <h3>Apertura del día</h3>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem">Ingresa el stock inicial con el que abrís hoy.</p>
+    <div id="open-fields"></div>
+    <button class="modal-save" onclick="confirmApertura()">Confirmar apertura</button>
+    <button class="modal-cancel" onclick="closeOpenModal()">Cancelar</button>
+  </div>
+</div>
+
+<!-- MODAL cierre -->
+<div class="modal-bg" id="close-modal-bg">
+  <div class="modal">
+    <h3>Cierre del día</h3>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem">Ingresa el stock real al cierre para calcular diferencias.</p>
+    <div id="close-fields"></div>
+    <button class="modal-save" onclick="confirmCierre()">Confirmar cierre</button>
+    <button class="modal-cancel" onclick="closeCloseModal()">Cancelar</button>
+  </div>
+</div>
+
 <script>
-  const LOCS = { aeropuerto:{name:'Aeropuerto',svgHref:'#icon-plane'}, teleferico:{name:'Teleférico Morado',svgHref:'#icon-cable'} };
-  const DEFAULTS = [
-    {name:'Americano',          price:12, grams:20,  cat:'cafe'},
-    {name:'Latte',              price:16, grams:20,  cat:'cafe'},
-    {name:'Cappuccino',         price:16, grams:20,  cat:'cafe'},
-    {name:'Café Doble',         price:19, grams:21,  cat:'cafe'},
-    {name:'Iced Latte',         price:16, grams:20,  cat:'cafe'},
-    {name:'Americano Frío',     price:12, grams:20,  cat:'cafe'},
-    {name:'Mocaccino',          price:18, grams:20,  cat:'cafe'},
-    {name:'Combo Hot Dog + Americano', price:20, grams:20, cat:'combo'},
-    {name:'Bolsa de Café',      price:50, grams:250, cat:'bolsa'},
-    {name:'Hot Dog Extralargo', price:12, grams:0,   cat:'hotdog'},
-    {name:'Hot Dog Chiquito',   price:6,  grams:0,   cat:'hotdog'},
-    {name:'Tucumana',           price:7,  grams:0,   cat:'empanada'},
-    {name:'Tucumana Rematada',  price:5,  grams:0,   cat:'empanada'},
-    {name:'Combo Café + Tucumana', price:15, grams:20, cat:'combo'},
-    {name:'Mate',               price:6,  grams:0,   cat:'mate'},
-  ];
-  const PROD_KEY  = 'arcafe_products_v5';
-  const SALES_KEY = id => `arcafe_sales_v5_${id}`;
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// CONFIG
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const LOCS = {
+  aeropuerto:{name:'Aeropuerto',svgHref:'#icon-plane'},
+  teleferico:{name:'Teleférico Morado',svgHref:'#icon-cable'}
+};
 
-  let currentLoc=null, editingIndex=null, products=[], sales=[], reportData={};
+const DEFAULT_PRODUCTS = [
+  {name:'Americano',          price:12, grams:20,  cat:'cafe'},
+  {name:'Latte',              price:16, grams:20,  cat:'cafe'},
+  {name:'Cappuccino',         price:16, grams:20,  cat:'cafe'},
+  {name:'Café Doble',         price:19, grams:21,  cat:'cafe'},
+  {name:'Iced Latte',         price:16, grams:20,  cat:'cafe'},
+  {name:'Americano Frío',     price:12, grams:20,  cat:'cafe'},
+  {name:'Mocaccino',          price:18, grams:20,  cat:'cafe'},
+  {name:'Combo Hot Dog + Americano', price:20, grams:20, cat:'combo'},
+  {name:'Bolsa de Café',      price:50, grams:250, cat:'bolsa'},
+  {name:'Hot Dog Extralargo', price:12, grams:0,   cat:'hotdog'},
+  {name:'Hot Dog Chiquito',   price:6,  grams:0,   cat:'hotdog'},
+  {name:'Tucumana',           price:7,  grams:0,   cat:'empanada'},
+  {name:'Tucumana Rematada',  price:5,  grams:0,   cat:'empanada'},
+  {name:'Combo Café + Tucumana', price:15, grams:20, cat:'combo'},
+  {name:'Mate',               price:6,  grams:0,   cat:'mate'},
+];
 
-  function loadProducts(){ try{const s=localStorage.getItem(PROD_KEY);if(s)return JSON.parse(s);}catch(e){}return DEFAULTS.map(p=>({...p})); }
-  function saveProducts(){ try{localStorage.setItem(PROD_KEY,JSON.stringify(products));}catch(e){} }
-  function loadSales(id){ try{const s=localStorage.getItem(SALES_KEY(id));if(s)return JSON.parse(s);}catch(e){}return []; }
-  function saveSales(){ try{localStorage.setItem(SALES_KEY(currentLoc),JSON.stringify(sales));}catch(e){} }
-  function getCount(name){ return sales.filter(s=>s.name===name).length; }
+// Default inventory items
+const DEFAULT_INVENTORY = [
+  {id:'cafe',     name:'Café',       unit:'g',   stock:0, minStock:500,  category:'cafe',     sachetMode:false},
+  {id:'leche',    name:'Leche',      unit:'ml',  stock:0, minStock:2000, category:'lacteo',   sachetMode:true,  sachetMl:1000},
+  {id:'vasos',    name:'Vasos',      unit:'u',   stock:0, minStock:20,   category:'descart',  sachetMode:false},
+  {id:'tapas',    name:'Tapas',      unit:'u',   stock:0, minStock:20,   category:'descart',  sachetMode:false},
+  {id:'chocolate',name:'Chocolate',  unit:'u',   stock:0, minStock:10,   category:'ingrediente', sachetMode:false},
+  {id:'pan',      name:'Pan HotDog', unit:'u',   stock:0, minStock:10,   category:'alimento', sachetMode:false},
+  {id:'salchicha',name:'Salchicha',  unit:'u',   stock:0, minStock:10,   category:'alimento', sachetMode:false},
+];
 
-  function getCatIcon(cat){
-    const map = {
-      cafe:     '#icon-cup',
-      hotdog:   '#icon-hotdog',
-      empanada: '#icon-empanada',
-      bolsa:    '#icon-bolsa',
-      mate:     '#icon-mate',
-      combo:    '#icon-combo',
-    };
-    return map[cat] || '#icon-cup';
-  }
-  function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+// Recipes: what each product consumes from inventory
+const DEFAULT_RECIPES = {
+  'Americano':          [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Americano Frío':     [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Café Doble':         [{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Latte':              [{id:'cafe',qty:20},{id:'leche',qty:250},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Cappuccino':         [{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Iced Latte':         [{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Mocaccino':          [{id:'cafe',qty:20},{id:'leche',qty:150},{id:'chocolate',qty:1},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Mate':               [{id:'vasos',qty:1}],
+  'Hot Dog Extralargo': [{id:'pan',qty:1},{id:'salchicha',qty:1}],
+  'Hot Dog Chiquito':   [{id:'pan',qty:1},{id:'salchicha',qty:1}],
+  'Tucumana':           [],
+  'Tucumana Rematada':  [],
+  'Bolsa de Café':      [{id:'cafe',qty:250}],
+  'Combo Hot Dog + Americano': [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1},{id:'pan',qty:1},{id:'salchicha',qty:1}],
+  'Combo Café + Tucumana':     [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+};
 
-  function selectLocation(id){
-    currentLoc=id; sales=loadSales(id); products=loadProducts();
-    document.getElementById('loc-name').textContent=LOCS[id].name;
-    document.getElementById('loc-svg-use').setAttribute('href',LOCS[id].svgHref);
-    document.getElementById('fecha').textContent=new Date().toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    show('screen-app'); render();
-  }
+const MOV_COLORS = {sale:'#a83232',restock:'#5a9a60',adjustment:'#c9a84c',waste:'#c47a2a',damage:'#a83232',opening:'#5a9a60',closing:'#c9a84c'};
 
-  function goBack(){ show('screen-picker'); }
-  function showApp(){ show('screen-app'); }
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STORAGE KEYS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const PROD_KEY     = 'arcafe_products_v6';
+const SALES_KEY    = id => `arcafe_sales_v6_${id}`;
+const INV_KEY      = id => `arcafe_inventory_v6_${id}`;
+const RECIPES_KEY  = 'arcafe_recipes_v6';
+const MOV_KEY      = id => `arcafe_inventory_movements_v6_${id}`;
+const SESSION_KEY  = id => `arcafe_daily_sessions_v6_${id}`;
 
-  function render(){
-    const list=document.getElementById('product-list');
-    const totalU=sales.length;
-    const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
-    const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
-    const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
-    document.getElementById('total-unidades').textContent=totalU;
-    document.getElementById('total-dinero').textContent='Bs. '+totalBs.toFixed(2);
-    document.getElementById('total-grams').textContent=totalG>=1000?(totalG/1000).toFixed(2)+' kg':totalG+' g';
-    document.getElementById('top-producto').textContent=top&&top.cnt>0?top.name:'—';
-    list.innerHTML='';
-    if(!products.length){list.innerHTML='<p class="empty">Sin productos.</p>';return;}
-    products.forEach((p,i)=>{
-      const cnt=getCount(p.name),pct=totalU>0?Math.round(cnt/totalU*100):0;
-      const sub=(cnt*(p.price||0)).toFixed(2),grUsd=cnt*(p.grams||0);
-      const card=document.createElement('div'); card.className='product-card';
-      card.innerHTML=`
-        <svg width="18" height="18" class="product-type-icon" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg>
-        <div class="product-info">
-          <div class="product-name">${p.name}</div>
-          <div class="product-meta" onclick="openModal(${i})">
-            <span>${p.price>0?'Bs. '+p.price.toFixed(2):'+ precio'}</span>
-            <span>${p.grams>0?p.grams+'g':'+ gramos'}</span>
-            <svg width="11" height="11" style="color:var(--text3)"><use href="#icon-edit"/></svg>
-          </div>
-          <div class="product-sub">${cnt>0?pct+'% del total · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas registradas'}</div>
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// STATE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+let currentLoc=null, editingIndex=null, adjItemId=null;
+let products=[], sales=[], inventory=[], recipes={}, movements=[], session=null;
+let reportData={}, currentInvTab='stock';
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// LOAD / SAVE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function ls(key,def){ try{const s=localStorage.getItem(key);if(s)return JSON.parse(s);}catch(e){}return def; }
+function ss(key,val){ try{localStorage.setItem(key,JSON.stringify(val));}catch(e){} }
+
+function loadAll(){
+  products  = ls(PROD_KEY, DEFAULT_PRODUCTS.map(p=>({...p})));
+  sales     = ls(SALES_KEY(currentLoc), []);
+  inventory = ls(INV_KEY(currentLoc), DEFAULT_INVENTORY.map(i=>({...i})));
+  recipes   = ls(RECIPES_KEY, {...DEFAULT_RECIPES});
+  movements = ls(MOV_KEY(currentLoc), []);
+  // Only today's session
+  const todayKey = new Date().toISOString().slice(0,10);
+  const sessions = ls(SESSION_KEY(currentLoc), {});
+  session = sessions[todayKey] || null;
+}
+
+function saveProducts(){ ss(PROD_KEY, products); }
+function saveSales(){    ss(SALES_KEY(currentLoc), sales); }
+function saveInventory(){ ss(INV_KEY(currentLoc), inventory); }
+function saveMovements(){ ss(MOV_KEY(currentLoc), movements); }
+function saveSession(){
+  const todayKey = new Date().toISOString().slice(0,10);
+  const sessions = ls(SESSION_KEY(currentLoc), {});
+  sessions[todayKey] = session;
+  ss(SESSION_KEY(currentLoc), sessions);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// NAVIGATION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+function goBack(){ show('screen-picker'); }
+function showApp(){ show('screen-app'); render(); }
+function showInventory(){
+  document.getElementById('inv-title').textContent = 'Inventario — '+LOCS[currentLoc].name;
+  renderInventory();
+  show('screen-inventory');
+}
+
+function selectLocation(id){
+  currentLoc=id;
+  loadAll();
+  document.getElementById('loc-name').textContent=LOCS[id].name;
+  document.getElementById('loc-svg-use').setAttribute('href',LOCS[id].svgHref);
+  document.getElementById('fecha').textContent=new Date().toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  show('screen-app'); render();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// HELPERS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function getCount(name){ return sales.filter(s=>s.name===name).length; }
+function getCatIcon(cat){ return {cafe:'#icon-cup',hotdog:'#icon-hotdog',empanada:'#icon-empanada',bolsa:'#icon-bolsa',mate:'#icon-mate',combo:'#icon-combo'}[cat]||'#icon-cup'; }
+function fmtQty(item){ if(item.unit==='ml'&&item.stock>=1000) return (item.stock/1000).toFixed(1)+' L'; return item.stock+' '+item.unit; }
+function stockClass(item){ if(item.stock<=0) return 'critical'; if(item.stock<item.minStock) return 'warn'; return 'ok'; }
+function addMovement(type,itemId,delta,prev,next,reason){
+  const item=inventory.find(i=>i.id===itemId);
+  movements.push({id:Date.now()+'_'+Math.random().toString(36).slice(2),type,itemId,itemName:item?item.name:itemId,quantity:delta,previousStock:prev,newStock:next,reason:reason||'',timestamp:Date.now(),location:currentLoc});
+  saveMovements();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// RENDER VENTAS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function render(){
+  const list=document.getElementById('product-list');
+  const totalU=sales.length;
+  const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
+  const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
+  const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
+  document.getElementById('total-unidades').textContent=totalU;
+  document.getElementById('total-dinero').textContent='Bs. '+totalBs.toFixed(2);
+  document.getElementById('total-grams').textContent=totalG>=1000?(totalG/1000).toFixed(2)+' kg':totalG+' g';
+  document.getElementById('top-producto').textContent=top&&top.cnt>0?top.name:'—';
+  list.innerHTML='';
+  if(!products.length){list.innerHTML='<p class="empty">Sin productos.</p>';return;}
+  products.forEach((p,i)=>{
+    const cnt=getCount(p.name),pct=totalU>0?Math.round(cnt/totalU*100):0;
+    const sub=(cnt*(p.price||0)).toFixed(2),grUsd=cnt*(p.grams||0);
+    const card=document.createElement('div'); card.className='product-card';
+    card.innerHTML=`
+      <svg width="18" height="18" class="product-type-icon" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg>
+      <div class="product-info">
+        <div class="product-name">${p.name}</div>
+        <div class="product-meta" onclick="openModal(${i})">
+          <span>${p.price>0?'Bs. '+p.price.toFixed(2):'+ precio'}</span>
+          <span>${p.grams>0?p.grams+'g':'sin café'}</span>
+          <svg width="11" height="11" style="color:var(--text3)"><use href="#icon-edit"/></svg>
         </div>
-        <div class="controls">
-          <button class="btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button>
-          <span class="count">${cnt}</span>
-          <button class="btn" onclick="change(${i},1)">+</button>
-        </div>
-        <button class="delete-btn" onclick="deleteProduct(${i})">✕</button>`;
-      list.appendChild(card);
-    });
-  }
-
-  function change(i,delta){
-    const name=products[i].name;
-    if(delta>0){sales.push({name,ts:Date.now()});}
-    else{const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();if(idx!==undefined)sales.splice(idx,1);}
-    saveSales();render();
-  }
-
-  function deleteProduct(i){
-    if(!confirm('¿Eliminar "'+products[i].name+'"?\nSe eliminará de ambos locales.'))return;
-    sales=sales.filter(s=>s.name!==products[i].name);
-    products.splice(i,1);saveProducts();saveSales();render();
-  }
-
-  function addProduct(){
-    const ne=document.getElementById('new-name'),pe=document.getElementById('new-price'),ge=document.getElementById('new-grams');
-    const name=ne.value.trim(),price=parseFloat(pe.value)||0,grams=parseInt(ge.value)||0;
-    if(!name){ne.focus();return;}
-    if(products.find(p=>p.name.toLowerCase()===name.toLowerCase())){ne.style.borderBottomColor='red';setTimeout(()=>ne.style.borderBottomColor='',1500);return;}
-    products.push({name,price,grams});ne.value='';pe.value='';ge.value='';saveProducts();render();
-  }
-
-  function openModal(i){
-    editingIndex=i;
-    document.getElementById('modal-title').textContent=products[i].name;
-    document.getElementById('modal-price').value=products[i].price||'';
-    document.getElementById('modal-grams').value=products[i].grams||'';
-    document.getElementById('modal-bg').classList.add('open');
-    setTimeout(()=>document.getElementById('modal-price').focus(),100);
-  }
-  function saveModal(){
-    if(editingIndex===null)return;
-    products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;
-    products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;
-    saveProducts();closeModal();render();
-  }
-  function closeModal(){document.getElementById('modal-bg').classList.remove('open');editingIndex=null;}
-
-  function resetAll(){
-    if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'?'))return;
-    sales=[];saveSales();render();
-  }
-
-  function buildReportData(){
-    const now=new Date();
-    const dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-    const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
-    const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
-    const rows=products.map(p=>{const cnt=getCount(p.name);return{name:p.name,cnt,bs:cnt*(p.price||0),grams:cnt*(p.grams||0),cat:p.cat||'cafe'};}).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
-    const hourCounts={};
-    sales.forEach(s=>{const h=new Date(s.ts).getHours();hourCounts[h]=(hourCounts[h]||0)+1;});
-    const hours=Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
-    const minH=hours.length?Math.min(...hours):0,maxH=hours.length?Math.max(...hours):0;
-    const maxVal=hours.length?Math.max(...Object.values(hourCounts)):1;
-    return{now,dateStr,totalBs,totalG,rows,hourCounts,hours,minH,maxH,maxVal};
-  }
-
-  function showReport(){
-    const d=buildReportData();reportData=d;
-    const loc=LOCS[currentLoc];
-    document.getElementById('report-title').textContent=loc.name+' — '+d.now.toLocaleDateString('es-BO',{day:'numeric',month:'long'});
-    const gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
-    let chartHTML='';
-    if(!d.hours.length){chartHTML='<p class="chart-empty">Sin datos de horario aún.</p>';}
-    else{
-      chartHTML='<div class="chart-wrap"><div class="chart">';
-      for(let h=d.minH;h<=d.maxH;h++){
-        const val=d.hourCounts[h]||0,barH=val>0?Math.max(6,Math.round((val/d.maxVal)*80)):3;
-        const ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';
-        chartHTML+=`<div class="chart-col"><div class="chart-val">${val>0?val:''}</div><div class="chart-bar-wrap"><div class="chart-bar ${val===0?'empty':''}" style="height:${barH}px"></div></div><div class="chart-label">${ampm}</div></div>`;
-      }
-      chartHTML+='</div></div>';
-    }
-    const rowsHTML=d.rows.length?d.rows.map(r=>`
-      <div class="report-row">
-        <div class="report-row-name" style="display:flex;align-items:center;gap:8px">
-          <svg width="14" height="14" style="color:var(--gold);opacity:0.6;flex-shrink:0"><use href="${getCatIcon(r.cat)}"/></svg>
-          ${r.name}
-        </div>
-        <div class="report-row-right">
-          <div class="report-row-units">${r.cnt} unid.</div>
-          <div class="report-row-bs">Bs. ${r.bs.toFixed(2)}</div>
-          ${r.grams>0?`<div class="report-row-grams">${r.grams}g café</div>`:''}
-        </div>
-      </div>`).join(''):'<p class="empty">Sin ventas registradas hoy.</p>';
-    document.getElementById('report-body').innerHTML=`
-      <div class="report-totals">
-        <div class="report-total-cell gold" style="display:flex;justify-content:space-between;align-items:center">
-          <div><div class="rtc-label">Total generado</div><div class="rtc-value">Bs. ${d.totalBs.toFixed(2)}</div></div>
-          <div style="text-align:right"><div class="rtc-label">Unidades</div><div class="rtc-value white">${sales.length}</div></div>
-        </div>
-        <div class="report-total-cell green" style="display:flex;justify-content:space-between;align-items:center">
-          <div><div class="rtc-label">Café utilizado</div><div class="rtc-value grn">${gramsDisplay}</div></div>
-        </div>
+        <div class="product-sub">${cnt>0?pct+'% del total · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas registradas'}</div>
       </div>
-      <div class="report-section-title">Ventas por producto</div>
-      <div class="report-table">${rowsHTML}</div>
-      <div class="report-section-title">Actividad por hora</div>
-      <div class="report-table" style="padding:1rem">${chartHTML}</div>`;
-    show('screen-report');
+      <div class="controls">
+        <button class="btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button>
+        <span class="count">${cnt}</span>
+        <button class="btn" onclick="change(${i},1)">+</button>
+      </div>
+      <button class="delete-btn" onclick="deleteProduct(${i})">✕</button>`;
+    list.appendChild(card);
+  });
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// VENTAS + INVENTORY DEDUCTION
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function change(i,delta){
+  const name=products[i].name;
+  if(delta>0){
+    sales.push({name,ts:Date.now()});
+    // deduct inventory via recipe
+    const recipe=recipes[name]||[];
+    recipe.forEach(({id,qty})=>{
+      const item=inventory.find(it=>it.id===id);
+      if(!item) return;
+      const prev=item.stock;
+      item.stock=Math.max(0,item.stock-qty);
+      addMovement('sale',id,-qty,prev,item.stock,`Venta: ${name}`);
+    });
+    saveInventory();
+  } else {
+    const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
+    if(idx!==undefined){
+      sales.splice(idx,1);
+      // restore inventory
+      const recipe=recipes[name]||[];
+      recipe.forEach(({id,qty})=>{
+        const item=inventory.find(it=>it.id===id);
+        if(!item) return;
+        const prev=item.stock;
+        item.stock=item.stock+qty;
+        addMovement('adjustment',id,qty,prev,item.stock,`Venta revertida: ${name}`);
+      });
+      saveInventory();
+    }
+  }
+  saveSales(); render();
+}
+
+function deleteProduct(i){
+  if(!confirm('¿Eliminar "'+products[i].name+'"?'))return;
+  sales=sales.filter(s=>s.name!==products[i].name);
+  products.splice(i,1);saveProducts();saveSales();render();
+}
+
+function addProduct(){
+  const ne=document.getElementById('new-name'),pe=document.getElementById('new-price'),ge=document.getElementById('new-grams');
+  const name=ne.value.trim(),price=parseFloat(pe.value)||0,grams=parseInt(ge.value)||0;
+  if(!name){ne.focus();return;}
+  if(products.find(p=>p.name.toLowerCase()===name.toLowerCase())){ne.style.borderBottomColor='red';setTimeout(()=>ne.style.borderBottomColor='',1500);return;}
+  products.push({name,price,grams,cat:'cafe'});ne.value='';pe.value='';ge.value='';saveProducts();render();
+}
+
+function openModal(i){
+  editingIndex=i;
+  document.getElementById('modal-title').textContent=products[i].name;
+  document.getElementById('modal-price').value=products[i].price||'';
+  document.getElementById('modal-grams').value=products[i].grams||'';
+  document.getElementById('modal-bg').classList.add('open');
+  setTimeout(()=>document.getElementById('modal-price').focus(),100);
+}
+function saveModal(){
+  if(editingIndex===null)return;
+  products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;
+  products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;
+  saveProducts();closeModal();render();
+}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');editingIndex=null;}
+
+function resetAll(){
+  if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'?'))return;
+  sales=[];saveSales();render();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// INVENTORY RENDER
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function switchInvTab(tab){
+  currentInvTab=tab;
+  document.querySelectorAll('.inv-tab').forEach((t,i)=>{
+    t.classList.toggle('active',['stock','adjust','movements'][i]===tab);
+  });
+  document.getElementById('inv-tab-stock').style.display=tab==='stock'?'block':'none';
+  document.getElementById('inv-tab-adjust').style.display=tab==='adjust'?'block':'none';
+  document.getElementById('inv-tab-movements').style.display=tab==='movements'?'block':'none';
+  renderInventory();
+}
+
+function renderInventory(){
+  renderSessionBanner();
+  renderStockTab();
+  renderAdjustTab();
+  renderMovementsTab();
+}
+
+function renderSessionBanner(){
+  const banner=document.getElementById('session-banner');
+  const txt=document.getElementById('session-status-text');
+  const sub=document.getElementById('session-status-sub');
+  const btn=document.getElementById('session-action-btn');
+  if(!session){
+    banner.className='session-banner closed';
+    txt.textContent='Sin apertura hoy';
+    sub.textContent='Registra el stock inicial para comenzar el día';
+    btn.textContent='Apertura';
+    btn.className='session-btn';
+  } else if(session.status==='open'){
+    banner.className='session-banner open';
+    txt.textContent='Día en curso';
+    sub.textContent='Apertura: '+new Date(session.openedAt).toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'});
+    btn.textContent='Cierre';
+    btn.className='session-btn danger';
+  } else {
+    banner.className='session-banner closed';
+    txt.textContent='Día cerrado';
+    sub.textContent='Cierre: '+new Date(session.closedAt).toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'});
+    btn.textContent='Ver cierre';
+    btn.className='session-btn';
+  }
+}
+
+function renderStockTab(){
+  const el=document.getElementById('inv-tab-stock');
+  if(currentInvTab!=='stock'){return;}
+  const criticals=inventory.filter(i=>i.stock<i.minStock);
+  let html='';
+  if(criticals.length){
+    html+=`<div style="margin:1rem 1.25rem 0;background:var(--danger-dim);border:1px solid rgba(168,50,50,.3);border-radius:4px;padding:.75rem 1rem;display:flex;align-items:center;gap:10px">
+      <svg width="16" height="16" style="color:var(--danger);flex-shrink:0"><use href="#icon-warn"/></svg>
+      <span style="font-size:11px;color:var(--danger)">${criticals.length} insumo${criticals.length>1?'s':''} bajo mínimo</span>
+    </div>`;
+  }
+  html+=`<div class="section-title">Stock actual</div><div class="stock-list">`;
+  inventory.forEach(item=>{
+    const cls=stockClass(item);
+    const display=fmtQty(item);
+    const sachetsInfo=item.sachetMode&&item.stock>0?` (${(item.stock/item.sachetMl).toFixed(1)} sachets)`:'';
+    html+=`<div class="stock-card">
+      <div class="stock-info">
+        <div class="stock-name">${item.name}</div>
+        <div class="stock-detail">Mínimo: ${item.minStock} ${item.unit}${sachetsInfo}</div>
+      </div>
+      <div class="stock-qty">
+        <div class="stock-qty-val ${cls}">${display}</div>
+        <div class="stock-qty-unit">${item.unit}</div>
+      </div>
+      <button class="adj-btn" onclick="openAdjModal('${item.id}')">
+        <svg width="14" height="14" style="color:var(--gold)"><use href="#icon-plus"/></svg>
+      </button>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function renderAdjustTab(){
+  const el=document.getElementById('inv-tab-adjust');
+  if(currentInvTab!=='adjust'){return;}
+  let html=`<div class="section-title">Ajustes rápidos</div><div class="stock-list">`;
+  inventory.forEach(item=>{
+    html+=`<div class="stock-card">
+      <div class="stock-info">
+        <div class="stock-name">${item.name}</div>
+        <div class="stock-detail">${fmtQty(item)}</div>
+      </div>
+      <button class="adj-btn" style="margin-left:auto" onclick="openAdjModal('${item.id}')">
+        <svg width="14" height="14" style="color:var(--gold)"><use href="#icon-edit"/></svg>
+      </button>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+function renderMovementsTab(){
+  const el=document.getElementById('inv-tab-movements');
+  if(currentInvTab!=='movements'){return;}
+  const today=new Date(); today.setHours(0,0,0,0);
+  const todayMovs=[...movements].filter(m=>m.timestamp>=today.getTime()).sort((a,b)=>b.timestamp-a.timestamp);
+  let html=`<div class="section-title">Movimientos de hoy</div>`;
+  if(!todayMovs.length){html+='<p class="empty">Sin movimientos registrados hoy.</p>';el.innerHTML=html;return;}
+  html+=`<div class="mov-list">`;
+  todayMovs.forEach(m=>{
+    const isPos=m.quantity>0;
+    const time=new Date(m.timestamp).toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit'});
+    const typeLabels={sale:'Venta',restock:'Reposición',adjustment:'Ajuste',waste:'Desperdicio',damage:'Dañado',opening:'Apertura',closing:'Cierre'};
+    html+=`<div class="mov-card">
+      <div class="mov-type-dot" style="background:${MOV_COLORS[m.type]||'#888'}"></div>
+      <div class="mov-info">
+        <div class="mov-name">${m.itemName} <span style="font-size:10px;color:var(--text3)">${typeLabels[m.type]||m.type}</span></div>
+        <div class="mov-detail">${time}${m.reason?' · '+m.reason:''} · ${m.previousStock}→${m.newStock} ${inventory.find(i=>i.id===m.itemId)?.unit||''}</div>
+      </div>
+      <div class="mov-qty ${isPos?'pos':'neg'}">${isPos?'+':''}${m.quantity}</div>
+    </div>`;
+  });
+  html+='</div>';
+  el.innerHTML=html;
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// ADJUSTMENT MODAL
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function openAdjModal(itemId){
+  adjItemId=itemId;
+  const item=inventory.find(i=>i.id===itemId);
+  document.getElementById('adj-modal-title').textContent='Ajuste — '+item.name;
+  document.getElementById('adj-qty').value='';
+  document.getElementById('adj-reason').value='';
+  document.getElementById('adj-type').value='restock';
+  // Show sachet input only for milk
+  const isMilk=item.sachetMode;
+  document.getElementById('adj-qty-field').style.display=isMilk?'none':'block';
+  document.getElementById('adj-sachets-field').style.display=isMilk?'block':'none';
+  document.getElementById('adj-qty-label').textContent=`Cantidad (${item.unit})`;
+  document.getElementById('adj-modal-bg').classList.add('open');
+}
+function closeAdjModal(){document.getElementById('adj-modal-bg').classList.remove('open');adjItemId=null;}
+
+function saveAdjustment(){
+  if(!adjItemId) return;
+  const item=inventory.find(i=>i.id===adjItemId);
+  const type=document.getElementById('adj-type').value;
+  const reason=document.getElementById('adj-reason').value.trim();
+  let qty;
+  if(item.sachetMode){
+    const sachets=parseInt(document.getElementById('adj-sachets').value)||0;
+    qty=sachets*item.sachetMl;
+  } else {
+    qty=parseFloat(document.getElementById('adj-qty').value)||0;
+  }
+  if(qty<=0) return;
+
+  const prev=item.stock;
+  let delta;
+  if(type==='restock'){ delta=qty; item.stock+=qty; }
+  else if(type==='waste'||type==='damage'){ delta=-qty; item.stock=Math.max(0,item.stock-qty); }
+  else { // adjustment — set absolute
+    delta=qty-item.stock; item.stock=qty;
+  }
+  addMovement(type,adjItemId,delta,prev,item.stock,reason);
+  saveInventory();
+  closeAdjModal();
+  renderInventory();
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// SESSION — APERTURA / CIERRE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function handleSessionAction(){
+  if(!session) openAperturaModal();
+  else if(session.status==='open') openCierreModal();
+  else showCierreReport();
+}
+
+function openAperturaModal(){
+  let html='';
+  inventory.forEach(item=>{
+    const isMilk=item.sachetMode;
+    html+=`<div class="modal-field">
+      <div class="modal-field-label">${item.name} ${isMilk?'(sachets)':'('+item.unit+')'}</div>
+      <input type="number" id="open_${item.id}" min="0" step="${isMilk?1:0.1}" placeholder="${isMilk?'Nro. sachets':'Cantidad'}"/>
+    </div>`;
+  });
+  document.getElementById('open-fields').innerHTML=html;
+  document.getElementById('open-modal-bg').classList.add('open');
+}
+function closeOpenModal(){document.getElementById('open-modal-bg').classList.remove('open');}
+
+function confirmApertura(){
+  const opening={};
+  inventory.forEach(item=>{
+    const isMilk=item.sachetMode;
+    const val=parseFloat(document.getElementById('open_'+item.id).value)||0;
+    const qty=isMilk?val*item.sachetMl:val;
+    const prev=item.stock;
+    item.stock=qty;
+    opening[item.id]=qty;
+    addMovement('opening',item.id,qty-prev,prev,qty,'Apertura del día');
+  });
+  saveInventory();
+  session={status:'open',openedAt:Date.now(),opening};
+  saveSession();
+  closeOpenModal();
+  renderInventory();
+}
+
+function openCierreModal(){
+  let html='';
+  inventory.forEach(item=>{
+    const isMilk=item.sachetMode;
+    const theoretical=item.stock;
+    const dispTh=isMilk?(theoretical/item.sachetMl).toFixed(1)+' sachets ('+theoretical+'ml)':theoretical+' '+item.unit;
+    html+=`<div class="modal-field">
+      <div class="modal-field-label">${item.name} — Teórico: ${dispTh}</div>
+      <input type="number" id="close_${item.id}" min="0" step="${isMilk?1:0.1}" placeholder="${isMilk?'Sachets reales':'Cantidad real'}"/>
+    </div>`;
+  });
+  document.getElementById('close-fields').innerHTML=html;
+  document.getElementById('close-modal-bg').classList.add('open');
+}
+function closeCloseModal(){document.getElementById('close-modal-bg').classList.remove('open');}
+
+function confirmCierre(){
+  const closing={};
+  const diffs={};
+  inventory.forEach(item=>{
+    const isMilk=item.sachetMode;
+    const val=parseFloat(document.getElementById('close_'+item.id).value)||0;
+    const realQty=isMilk?val*item.sachetMl:val;
+    const theoretical=item.stock;
+    const diff=realQty-theoretical;
+    closing[item.id]={real:realQty,theoretical,diff};
+    diffs[item.id]=diff;
+    addMovement('closing',item.id,diff,theoretical,realQty,'Cierre del día');
+    item.stock=realQty;
+  });
+  saveInventory();
+  session={...session,status:'closed',closedAt:Date.now(),closing};
+  saveSession();
+  closeCloseModal();
+  renderInventory();
+  showCierreReport();
+}
+
+function showCierreReport(){
+  if(!session||!session.closing) return;
+  let rows='';
+  inventory.forEach(item=>{
+    const c=session.closing[item.id];
+    if(!c) return;
+    const diff=c.diff;
+    const cls=diff<-item.minStock*0.1?'neg':diff<0?'warn':'ok';
+    const op=session.opening?session.opening[item.id]||0:0;
+    rows+=`<tr>
+      <td>${item.name}</td>
+      <td class="num">${op} ${item.unit}</td>
+      <td class="num">${c.theoretical} ${item.unit}</td>
+      <td class="num">${c.real} ${item.unit}</td>
+      <td class="num ${cls}">${diff>0?'+':''}${diff.toFixed(0)} ${item.unit}</td>
+    </tr>`;
+  });
+  const html=`<div style="padding:1rem 1.25rem">
+    <div style="font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:var(--gold);margin-bottom:4px">Cierre del día</div>
+    <div style="font-size:11px;color:var(--text3);margin-bottom:1.25rem">${LOCS[currentLoc].name} · ${new Date().toLocaleDateString('es-BO',{day:'numeric',month:'long',year:'numeric'})}</div>
+    <div style="overflow-x:auto"><table class="close-table">
+      <thead><tr><th>Insumo</th><th>Apertura</th><th>Teórico</th><th>Real</th><th>Diferencia</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table></div>
+    <button class="add-btn" style="margin-top:.5rem" onclick="showInventory()">← Volver al inventario</button>
+  </div>`;
+  document.getElementById('inv-tab-stock').innerHTML=html;
+  switchInvTab('stock');
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// REPORT
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function buildReportData(){
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
+  const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
+  const rows=products.map(p=>{const cnt=getCount(p.name);return{name:p.name,cnt,bs:cnt*(p.price||0),grams:cnt*(p.grams||0),cat:p.cat||'cafe'};}).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
+  const hourCounts={};
+  sales.forEach(s=>{const h=new Date(s.ts).getHours();hourCounts[h]=(hourCounts[h]||0)+1;});
+  const hours=Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
+  const minH=hours.length?Math.min(...hours):0,maxH=hours.length?Math.max(...hours):0;
+  const maxVal=hours.length?Math.max(...Object.values(hourCounts)):1;
+  return{now,dateStr,totalBs,totalG,rows,hourCounts,hours,minH,maxH,maxVal};
+}
+
+function showReport(){
+  const d=buildReportData();reportData=d;
+  const loc=LOCS[currentLoc];
+  document.getElementById('report-title').textContent=loc.name+' — '+d.now.toLocaleDateString('es-BO',{day:'numeric',month:'long'});
+  const gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
+  let chartHTML='';
+  if(!d.hours.length){chartHTML='<p class="chart-empty">Sin datos de horario aún.</p>';}
+  else{
+    chartHTML='<div class="chart-wrap"><div class="chart">';
+    for(let h=d.minH;h<=d.maxH;h++){
+      const val=d.hourCounts[h]||0,barH=val>0?Math.max(6,Math.round((val/d.maxVal)*80)):3;
+      const ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';
+      chartHTML+=`<div class="chart-col"><div class="chart-val">${val>0?val:''}</div><div class="chart-bar-wrap"><div class="chart-bar ${val===0?'empty':''}" style="height:${barH}px"></div></div><div class="chart-label">${ampm}</div></div>`;
+    }
+    chartHTML+='</div></div>';
   }
 
-  function downloadCSV(){
-    const d=reportData;if(!d.dateStr)return;
-    const loc=LOCS[currentLoc].name,dateISO=d.now.toISOString().slice(0,10);
-    let csv='Local,Fecha,Producto,Unidades,Precio Unitario (Bs.),Total (Bs.),Cafe utilizado (g)\n';
-    d.rows.forEach(r=>{const p=products.find(p=>p.name===r.name);csv+=`"${loc}","${dateISO}","${r.name}",${r.cnt},${p?p.price.toFixed(2):'0.00'},${r.bs.toFixed(2)},${r.grams}\n`;});
-    csv+=`"${loc}","${dateISO}","TOTAL",${sales.length},,${d.totalBs.toFixed(2)},${d.totalG}\n`;
-    const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');a.href=url;a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${dateISO}.csv`;a.click();URL.revokeObjectURL(url);
-  }
+  // inventory snapshot
+  let invHTML='';
+  inventory.forEach(item=>{
+    const cls=stockClass(item);
+    invHTML+=`<div class="report-row">
+      <div class="report-row-name">${item.name}</div>
+      <div class="report-row-right">
+        <div class="report-row-bs" style="color:${cls==='ok'?'var(--green)':cls==='warn'?'var(--orange)':'var(--danger)'}">${fmtQty(item)}</div>
+        <div class="report-row-units">mín. ${item.minStock} ${item.unit}</div>
+      </div>
+    </div>`;
+  });
 
-  function downloadPDF(){
-    const d=reportData;if(!d.dateStr)return;
-    const loc=LOCS[currentLoc].name,gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
-    let rowsHTML=d.rows.length?d.rows.map(r=>`<tr><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;font-size:14px">${r.name}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:center;font-size:14px">${r.cnt}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:right;font-size:14px;color:#8B6914">Bs. ${r.bs.toFixed(2)}</td><td style="padding:8px 12px;border-bottom:1px solid #e8dcc8;text-align:right;font-size:13px;color:#5a7a50">${r.grams>0?r.grams+'g':'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="padding:12px;text-align:center;color:#999">Sin ventas</td></tr>';
-    let hoursHTML='';
-    if(d.hours.length){for(let h=d.minH;h<=d.maxH;h++){const val=d.hourCounts[h]||0,pct=Math.round((val/d.maxVal)*100),ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';hoursHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px"><div style="width:36px;font-size:11px;color:#999;text-align:right">${ampm}</div><div style="flex:1;background:#f0e8d8;border-radius:2px;height:16px;overflow:hidden"><div style="width:${pct}%;background:#c9a84c;height:100%;border-radius:2px"></div></div><div style="width:20px;font-size:11px;color:#8B6914;font-weight:600">${val||''}</div></div>`;}}
-    else{hoursHTML='<p style="color:#999;font-size:13px">Sin datos.</p>';}
-    const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;margin:0;padding:32px;max-width:600px;margin:0 auto}h1{font-size:32px;color:#c9a84c;letter-spacing:0.06em;margin:0}.sub{font-size:11px;color:#999;letter-spacing:0.15em;text-transform:uppercase;margin-top:4px}.divider{border:none;border-top:1px solid #e0d4b8;margin:20px 0}.totals{display:flex;gap:16px;margin-bottom:20px}.tot-box{flex:1;border:1px solid #e0d4b8;border-radius:4px;padding:14px;background:#faf7f0}.tot-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:0.15em;margin-bottom:6px}.tot-val{font-size:26px;font-weight:700;color:#c9a84c}.tot-val.dark{color:#1a1a1a}.tot-val.grn{color:#5a9a60;font-size:22px}table{width:100%;border-collapse:collapse;margin-bottom:20px}th{padding:8px 12px;background:#f5f0e8;font-size:10px;text-transform:uppercase;letter-spacing:0.12em;color:#999;text-align:left;border-bottom:2px solid #e0d4b8}th:nth-child(2){text-align:center}th:nth-child(3),th:nth-child(4){text-align:right}.section{font-size:10px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:0.18em;margin-bottom:10px}.footer{margin-top:32px;font-size:10px;color:#bbb;text-align:center;letter-spacing:0.08em}</style></head><body><h1>Arcafé</h1><div class="sub">Café al Paso Premium</div><hr class="divider"/><div style="font-size:12px;color:#999;margin-bottom:4px;letter-spacing:0.08em;text-transform:uppercase">${loc}</div><div style="font-size:13px;color:#5a5048;margin-bottom:20px">${d.dateStr}</div><div class="totals"><div class="tot-box"><div class="tot-label">Total generado</div><div class="tot-val">Bs. ${d.totalBs.toFixed(2)}</div></div><div class="tot-box"><div class="tot-label">Unidades</div><div class="tot-val dark">${sales.length}</div></div><div class="tot-box"><div class="tot-label">Café utilizado</div><div class="tot-val grn">${gramsDisplay}</div></div></div><div class="section">Ventas por producto</div><table><thead><tr><th>Producto</th><th>Unid.</th><th>Total Bs.</th><th>Café</th></tr></thead><tbody>${rowsHTML}</tbody></table><div class="section">Actividad por hora</div>${hoursHTML}<div class="footer">Arcafé · Generado el ${new Date().toLocaleString('es-BO')}</div></body></html>`;
-    const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-    const url=URL.createObjectURL(blob);
-    const win=window.open(url,'_blank');
-    if(win){win.onload=()=>{win.print();};}
-    else{const a=document.createElement('a');a.href=url;a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${d.now.toISOString().slice(0,10)}.html`;a.click();}
-    setTimeout(()=>URL.revokeObjectURL(url),5000);
-  }
+  const rowsHTML=d.rows.length?d.rows.map(r=>`
+    <div class="report-row">
+      <div class="report-row-name"><svg width="14" height="14" style="color:var(--gold);opacity:.6;flex-shrink:0"><use href="${getCatIcon(r.cat)}"/></svg>${r.name}</div>
+      <div class="report-row-right">
+        <div class="report-row-units">${r.cnt} unid.</div>
+        <div class="report-row-bs">Bs. ${r.bs.toFixed(2)}</div>
+        ${r.grams>0?`<div class="report-row-grams">${r.grams}g café</div>`:''}
+      </div>
+    </div>`).join(''):'<p class="empty">Sin ventas registradas hoy.</p>';
 
-  document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-price').focus();});
-  document.getElementById('new-price').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-grams').focus();});
-  document.getElementById('new-grams').addEventListener('keydown',e=>{if(e.key==='Enter')addProduct();});
-  document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal();});
+  document.getElementById('report-body').innerHTML=`
+    <div class="report-totals">
+      <div class="report-total-cell gold" style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="rtc-label">Total generado</div><div class="rtc-value">Bs. ${d.totalBs.toFixed(2)}</div></div>
+        <div style="text-align:right"><div class="rtc-label">Unidades</div><div class="rtc-value white">${sales.length}</div></div>
+      </div>
+      <div class="report-total-cell green" style="display:flex;justify-content:space-between;align-items:center">
+        <div><div class="rtc-label">Café utilizado</div><div class="rtc-value grn">${gramsDisplay}</div></div>
+      </div>
+    </div>
+    <div class="report-section-title">Ventas por producto</div>
+    <div class="report-table">${rowsHTML}</div>
+    <div class="report-section-title">Stock al momento</div>
+    <div class="report-table">${invHTML}</div>
+    <div class="report-section-title">Actividad por hora</div>
+    <div class="report-table" style="padding:1rem">${chartHTML}</div>`;
+  show('screen-report');
+}
 
-  if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// DOWNLOADS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+function downloadCSV(){
+  const d=reportData;if(!d.dateStr)return;
+  const loc=LOCS[currentLoc].name,dateISO=d.now.toISOString().slice(0,10);
+  let csv='Local,Fecha,Producto,Unidades,Precio Unitario (Bs.),Total (Bs.),Cafe utilizado (g)\n';
+  d.rows.forEach(r=>{const p=products.find(p=>p.name===r.name);csv+=`"${loc}","${dateISO}","${r.name}",${r.cnt},${p?p.price.toFixed(2):'0.00'},${r.bs.toFixed(2)},${r.grams}\n`;});
+  csv+=`"${loc}","${dateISO}","TOTAL",${sales.length},,${d.totalBs.toFixed(2)},${d.totalG}\n\n`;
+  csv+='INVENTARIO\nInsumo,Stock actual,Unidad,Minimo\n';
+  inventory.forEach(item=>{csv+=`"${item.name}",${item.stock},"${item.unit}",${item.minStock}\n`;});
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${dateISO}.csv`;a.click();URL.revokeObjectURL(url);
+}
+
+function downloadPDF(){
+  const d=reportData;if(!d.dateStr)return;
+  const loc=LOCS[currentLoc].name,gramsDisplay=d.totalG>=1000?(d.totalG/1000).toFixed(2)+' kg':d.totalG+' g';
+  let rowsHTML=d.rows.length?d.rows.map(r=>`<tr><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;font-size:13px">${r.name}</td><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;text-align:center">${r.cnt}</td><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;text-align:right;color:#8B6914">Bs. ${r.bs.toFixed(2)}</td><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;text-align:right;color:#5a7a50">${r.grams>0?r.grams+'g':'—'}</td></tr>`).join(''):'<tr><td colspan="4" style="padding:12px;text-align:center;color:#999">Sin ventas</td></tr>';
+  let invHTML=inventory.map(item=>{
+    const cls=stockClass(item);
+    const color=cls==='ok'?'#5a9a60':cls==='warn'?'#c47a2a':'#a83232';
+    return `<tr><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;font-size:13px">${item.name}</td><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;text-align:right;color:${color};font-weight:600">${fmtQty(item)}</td><td style="padding:7px 10px;border-bottom:1px solid #e8dcc8;text-align:right;color:#999">${item.minStock} ${item.unit}</td></tr>`;
+  }).join('');
+  let hoursHTML='';
+  if(d.hours.length){for(let h=d.minH;h<=d.maxH;h++){const val=d.hourCounts[h]||0,pct=Math.round((val/d.maxVal)*100),ampm=h<12?h+'am':h===12?'12pm':(h-12)+'pm';hoursHTML+=`<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px"><div style="width:32px;font-size:11px;color:#999;text-align:right">${ampm}</div><div style="flex:1;background:#f0e8d8;border-radius:2px;height:14px;overflow:hidden"><div style="width:${pct}%;background:#c9a84c;height:100%;border-radius:2px"></div></div><div style="width:18px;font-size:11px;color:#8B6914;font-weight:600">${val||''}</div></div>`;}}
+  else{hoursHTML='<p style="color:#999;font-size:12px">Sin datos.</p>';}
+  const html=`<!DOCTYPE html><html><head><meta charset="UTF-8"/><style>body{font-family:Georgia,serif;background:#fff;color:#1a1a1a;padding:28px;max-width:580px;margin:0 auto}h1{font-size:30px;color:#c9a84c;letter-spacing:.06em;margin:0}.sub{font-size:10px;color:#999;letter-spacing:.15em;text-transform:uppercase;margin-top:4px}.div{border:none;border-top:1px solid #e0d4b8;margin:18px 0}.totals{display:flex;gap:12px;margin-bottom:18px}.tot-box{flex:1;border:1px solid #e0d4b8;border-radius:4px;padding:12px;background:#faf7f0}.tot-label{font-size:9px;color:#999;text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px}.tot-val{font-size:24px;font-weight:700;color:#c9a84c}.tot-val.dark{color:#1a1a1a}.tot-val.grn{color:#5a9a60;font-size:20px}table{width:100%;border-collapse:collapse;margin-bottom:18px}th{padding:7px 10px;background:#f5f0e8;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:#999;text-align:left;border-bottom:2px solid #e0d4b8}.sec{font-size:9px;font-weight:700;color:#999;text-transform:uppercase;letter-spacing:.15em;margin-bottom:8px}.footer{margin-top:24px;font-size:10px;color:#bbb;text-align:center}</style></head><body>
+  <h1>Arcafé</h1><div class="sub">Café al Paso Premium</div><hr class="div"/>
+  <div style="font-size:11px;color:#999;margin-bottom:3px;text-transform:uppercase">${loc}</div>
+  <div style="font-size:12px;color:#5a5048;margin-bottom:18px">${d.dateStr}</div>
+  <div class="totals">
+    <div class="tot-box"><div class="tot-label">Total generado</div><div class="tot-val">Bs. ${d.totalBs.toFixed(2)}</div></div>
+    <div class="tot-box"><div class="tot-label">Unidades</div><div class="tot-val dark">${sales.length}</div></div>
+    <div class="tot-box"><div class="tot-label">Café utilizado</div><div class="tot-val grn">${gramsDisplay}</div></div>
+  </div>
+  <div class="sec">Ventas por producto</div>
+  <table><thead><tr><th>Producto</th><th>Unid.</th><th>Total Bs.</th><th>Café</th></tr></thead><tbody>${rowsHTML}</tbody></table>
+  <div class="sec">Stock al cierre</div>
+  <table><thead><tr><th>Insumo</th><th style="text-align:right">Stock</th><th style="text-align:right">Mínimo</th></tr></thead><tbody>${invHTML}</tbody></table>
+  <div class="sec">Actividad por hora</div>${hoursHTML}
+  <div class="footer">Arcafé · ${new Date().toLocaleString('es-BO')}</div>
+  </body></html>`;
+  const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+  const url=URL.createObjectURL(blob);
+  const win=window.open(url,'_blank');
+  if(win){win.onload=()=>{win.print();};}
+  else{const a=document.createElement('a');a.href=url;a.download=`Arcafe_${loc.replace(/\s/g,'_')}_${d.now.toISOString().slice(0,10)}.html`;a.click();}
+  setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// EVENTS
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-price').focus();});
+document.getElementById('new-price').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-grams').focus();});
+document.getElementById('new-grams').addEventListener('keydown',e=>{if(e.key==='Enter')addProduct();});
+document.getElementById('modal-bg').addEventListener('click',e=>{if(e.target.id==='modal-bg')closeModal();});
+document.getElementById('adj-modal-bg').addEventListener('click',e=>{if(e.target.id==='adj-modal-bg')closeAdjModal();});
+document.getElementById('open-modal-bg').addEventListener('click',e=>{if(e.target.id==='open-modal-bg')closeOpenModal();});
+document.getElementById('close-modal-bg').addEventListener('click',e=>{if(e.target.id==='close-modal-bg')closeCloseModal();});
+
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
 </script>
 </body>
 </html>
