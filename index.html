@@ -618,24 +618,15 @@
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PIN AUTH
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-const PIN_KEY = 'arcafe_pin_v1';
+const FIXED_PIN = '1809';
 let pinBuffer = '';
-let pinMode = 'login'; // 'login' | 'setup'
 
 function initPin(){
-  const stored = localStorage.getItem(PIN_KEY);
-  if(!stored){
-    // First time — setup mode
-    pinMode = 'setup';
-    document.getElementById('pin-label').textContent = 'Creá tu PIN de 4 dígitos';
-    document.getElementById('pin-setup-hint').style.display = 'block';
-  } else {
-    pinMode = 'login';
-    document.getElementById('pin-label').textContent = 'Ingresá tu PIN para entrar';
-    document.getElementById('pin-setup-hint').style.display = 'none';
-  }
   pinBuffer = '';
   updatePinDots();
+  document.getElementById('pin-error').textContent = '';
+  document.getElementById('pin-label').textContent = 'Ingresá tu PIN para entrar';
+  document.getElementById('pin-setup-hint').style.display = 'none';
   show('screen-pin');
 }
 
@@ -661,23 +652,15 @@ function updatePinDots(){
 }
 
 function checkPin(){
-  const stored = localStorage.getItem(PIN_KEY);
-  if(pinMode === 'setup'){
-    // Save new PIN
-    localStorage.setItem(PIN_KEY, pinBuffer);
-    document.getElementById('pin-error').textContent = '✓ PIN guardado';
-    document.getElementById('pin-error').style.color = 'var(--green)';
-    setTimeout(()=>{ show('screen-picker'); initTutorial(); }, 500);
+  if(pinBuffer === FIXED_PIN){
+    document.getElementById('pin-error').textContent = '';
+    show('screen-picker');
+    initTutorial();
   } else {
-    if(pinBuffer === stored){
-      document.getElementById('pin-error').textContent = '';
-      show('screen-picker');
-    } else {
-      document.getElementById('pin-error').textContent = 'PIN incorrecto, intentá de nuevo';
-      document.getElementById('pin-error').style.color = 'var(--danger)';
-      pinBuffer = '';
-      updatePinDots();
-    }
+    document.getElementById('pin-error').textContent = 'PIN incorrecto, intentá de nuevo';
+    document.getElementById('pin-error').style.color = 'var(--danger)';
+    pinBuffer = '';
+    updatePinDots();
   }
 }
 
