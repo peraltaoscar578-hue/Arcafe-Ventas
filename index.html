@@ -280,14 +280,14 @@ body{
   display:block;border-radius:14px 14px 0 0;
 }
 .gtab-footer{
-  width:100%;padding:.5rem .4rem .45rem;
+  width:100%;padding:.55rem .6rem .5rem;
   background:var(--bg3);
   display:flex;align-items:center;justify-content:space-between;
   transition:background .18s;
 }
-.group-tab.active .gtab-footer{background:var(--gold-dim)}
+.group-tab.active .gtab-footer{background:rgba(201,168,76,.18)}
 .gtab-label{
-  font-size:9px;font-weight:700;color:var(--text3);
+  font-size:10px;font-weight:700;color:var(--text2);
   text-transform:uppercase;letter-spacing:.08em;
   transition:color .18s;line-height:1;
 }
@@ -295,10 +295,16 @@ body{
 .gtab-icon{display:none}
 .group-tab-count{
   font-family:'Cormorant Garamond',serif;
-  font-size:15px;font-weight:700;color:var(--text3);
-  transition:color .18s;min-height:16px;line-height:1;
+  font-size:18px;font-weight:700;
+  color:transparent;
+  transition:color .18s;min-height:18px;line-height:1;
+  min-width:20px;text-align:right;
 }
-.group-tab.active .group-tab-count{color:var(--gold)}
+.group-tab-count:not(:empty){color:var(--text2)}
+.group-tab.active .group-tab-count:not(:empty){
+  color:var(--gold);
+  text-shadow:0 0 8px rgba(201,168,76,.4);
+}
 
 /* ── SECTION TITLE ── */
 .sec-title{
@@ -1131,7 +1137,16 @@ let pinBuffer='';
 const ls=(k,d)=>{try{const s=localStorage.getItem(k);if(s)return JSON.parse(s);}catch(e){}return d;};
 const ss=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 function loadAll(){
-  products=ls(PROD_KEY,DEFAULT_PRODUCTS.map(p=>({...p})));
+  const rawProds=ls(PROD_KEY, null);
+  if(rawProds){
+    // Merge saved products with defaults to ensure group/cat fields are always present
+    products=rawProds.map(p=>{
+      const def=DEFAULT_PRODUCTS.find(d=>d.name===p.name);
+      return {...(def||{}), ...p, group:p.group||(def&&def.group)||'hot', cat:p.cat||(def&&def.cat)||'cafe'};
+    });
+  } else {
+    products=DEFAULT_PRODUCTS.map(p=>({...p}));
+  }
   sales=ls(SALES_KEY(currentLoc),[]);
   inventory=ls(INV_KEY(currentLoc),DEFAULT_INVENTORY.map(i=>({...i})));
   recipes=ls(RECIPES_KEY,{...DEFAULT_RECIPES});
@@ -1148,6 +1163,23 @@ function saveSession(){const todayKey=new Date().toISOString().slice(0,10);const
 
 // ━━━━━━━ SPLASH ━━━━━━━
 window.addEventListener('load',()=>{
+  // Migration: ensure saved products have group field
+  try{
+    const saved=localStorage.getItem('arcafe_products_v6');
+    if(saved){
+      const prods=JSON.parse(saved);
+      let needsSave=false;
+      prods.forEach(p=>{
+        if(!p.group){
+          const def=DEFAULT_PRODUCTS.find(d=>d.name===p.name);
+          p.group=def?def.group:'hot';
+          p.cat=p.cat||(def?def.cat:'cafe');
+          needsSave=true;
+        }
+      });
+      if(needsSave) localStorage.setItem('arcafe_products_v6',JSON.stringify(prods));
+    }
+  }catch(e){}
   setTimeout(()=>{
     document.getElementById('splash').classList.add('hide');
     setTimeout(()=>{document.getElementById('splash').style.display='none';initPin();},600);
