@@ -254,6 +254,52 @@ body{
 .s-card-row{display:flex;align-items:center;justify-content:space-between}
 .s-icon{opacity:.25}
 
+/* ── GROUP TABS ── */
+.group-tabs{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
+  padding:.85rem 1.1rem 0;
+}
+.group-tab{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:16px;
+  display:flex;flex-direction:column;align-items:center;gap:0;
+  cursor:pointer;font-family:'Jost',sans-serif;
+  transition:all .18s;overflow:hidden;position:relative;
+}
+.group-tab:active{transform:scale(.97)}
+.group-tab.active{
+  border-color:rgba(201,168,76,.6);
+}
+.group-tab.active::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(180deg,transparent 50%,rgba(201,168,76,.18) 100%);
+  pointer-events:none;
+}
+.gtab-img{
+  width:100%;aspect-ratio:1/1;object-fit:cover;
+  display:block;border-radius:14px 14px 0 0;
+}
+.gtab-footer{
+  width:100%;padding:.5rem .4rem .45rem;
+  background:var(--bg3);
+  display:flex;align-items:center;justify-content:space-between;
+  transition:background .18s;
+}
+.group-tab.active .gtab-footer{background:var(--gold-dim)}
+.gtab-label{
+  font-size:9px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.08em;
+  transition:color .18s;line-height:1;
+}
+.group-tab.active .gtab-label{color:var(--gold)}
+.gtab-icon{display:none}
+.group-tab-count{
+  font-family:'Cormorant Garamond',serif;
+  font-size:15px;font-weight:700;color:var(--text3);
+  transition:color .18s;min-height:16px;line-height:1;
+}
+.group-tab.active .group-tab-count{color:var(--gold)}
+
 /* ── SECTION TITLE ── */
 .sec-title{
   font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;
@@ -803,8 +849,42 @@ body{
       </div>
     </div>
 
-    <div class="sec-title">Productos</div>
-    <div class="prod-list" id="product-list"></div>
+    <!-- GROUP TABS -->
+    <div class="group-tabs" id="group-tabs">
+      <button class="group-tab" onclick="selectGroup('hot')" id="gtab-hot">
+        <img class="gtab-img" src="img-hot.png" alt="Cafés Calientes"/>
+        <div class="gtab-footer">
+          <span class="gtab-label">Calientes</span>
+        </div>
+      </button>
+      <button class="group-tab" onclick="selectGroup('cold')" id="gtab-cold">
+        <img class="gtab-img" src="img-cold.png" alt="Cafés Fríos"/>
+        <div class="gtab-footer">
+          <span class="gtab-label">Fríos</span>
+        </div>
+      </button>
+      <button class="group-tab" onclick="selectGroup('snack')" id="gtab-snack">
+        <img class="gtab-img" src="img-snack.png" alt="Snacks"/>
+        <div class="gtab-footer">
+          <span class="gtab-label">Snacks</span>
+        </div>
+      </button>
+      <button class="group-tab" onclick="selectGroup('combo')" id="gtab-combo">
+        <img class="gtab-img" src="img-combo.png" alt="Combos"/>
+        <div class="gtab-footer">
+          <span class="gtab-label">Combos</span>
+        </div>
+      </button>
+    </div>
+
+    <!-- EMPTY STATE -->
+    <div id="group-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;text-align:center">
+      <div style="font-size:42px;margin-bottom:1rem;opacity:.4">☕</div>
+      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text2);margin-bottom:6px">Seleccioná una categoría</div>
+      <div style="font-size:12px;color:var(--text3)">Tocá una de las pestañas para ver los productos</div>
+    </div>
+
+    <div class="prod-list" id="product-list" style="display:none"></div>
     <div class="add-box">
       <div class="add-lbl">Agregar producto</div>
       <div class="add-row"><input class="add-inp" id="new-name" type="text" placeholder="Nombre del producto..." maxlength="40"/></div>
@@ -988,15 +1068,25 @@ body{
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto',svgHref:'#ic-plane'},teleferico:{name:'Teleférico Morado',svgHref:'#ic-cable'}};
 const DEFAULT_PRODUCTS=[
-  {name:'Americano',price:12,grams:20,cat:'cafe'},{name:'Latte',price:16,grams:20,cat:'cafe'},
-  {name:'Cappuccino',price:16,grams:20,cat:'cafe'},{name:'Café Doble',price:19,grams:21,cat:'cafe'},
-  {name:'Iced Latte',price:16,grams:20,cat:'cafe'},{name:'Americano Frío',price:12,grams:20,cat:'cafe'},
-  {name:'Mocaccino',price:18,grams:20,cat:'cafe'},
-  {name:'Combo Hot Dog + Americano',price:20,grams:20,cat:'combo'},
-  {name:'Bolsa de Café',price:50,grams:250,cat:'bolsa'},
-  {name:'Hot Dog Extralargo',price:12,grams:0,cat:'hotdog'},{name:'Hot Dog Chiquito',price:6,grams:0,cat:'hotdog'},
-  {name:'Tucumana',price:7,grams:0,cat:'empanada'},{name:'Tucumana Rematada',price:5,grams:0,cat:'empanada'},
-  {name:'Combo Café + Tucumana',price:15,grams:20,cat:'combo'},{name:'Mate',price:6,grams:0,cat:'mate'},
+  // Cafés calientes
+  {name:'Americano',       price:12, grams:20, cat:'cafe',  group:'hot'},
+  {name:'Latte',           price:16, grams:20, cat:'cafe',  group:'hot'},
+  {name:'Cappuccino',      price:16, grams:20, cat:'cafe',  group:'hot'},
+  {name:'Café Doble',      price:19, grams:21, cat:'cafe',  group:'hot'},
+  {name:'Mocaccino',       price:18, grams:20, cat:'cafe',  group:'hot'},
+  {name:'Mate',            price:6,  grams:0,  cat:'mate',  group:'hot'},
+  // Cafés fríos
+  {name:'Iced Latte',      price:16, grams:20, cat:'cafe',  group:'cold'},
+  {name:'Americano Frío',  price:12, grams:20, cat:'cafe',  group:'cold'},
+  // Snacks
+  {name:'Hot Dog Extralargo', price:12, grams:0, cat:'hotdog',   group:'snack'},
+  {name:'Hot Dog Chiquito',   price:6,  grams:0, cat:'hotdog',   group:'snack'},
+  {name:'Tucumana',           price:7,  grams:0, cat:'empanada', group:'snack'},
+  {name:'Tucumana Rematada',  price:5,  grams:0, cat:'empanada', group:'snack'},
+  {name:'Bolsa de Café',      price:50, grams:250,cat:'bolsa',   group:'snack'},
+  // Combos
+  {name:'Combo Hot Dog + Americano', price:20, grams:20, cat:'combo', group:'combo'},
+  {name:'Combo Café + Tucumana',     price:15, grams:20, cat:'combo', group:'combo'},
 ];
 const DEFAULT_INVENTORY=[
   {id:'cafe',name:'Café',unit:'g',stock:0,minStock:500,category:'cafe',sachetMode:false},
@@ -1119,12 +1209,17 @@ function showReport(){navTo('report');}
 
 function selectLocation(id){
   currentLoc=id;loadAll();
+  currentGroup=null;
   document.getElementById('loc-name').textContent=LOCS[id].name;
   document.getElementById('loc-date').textContent=new Date().toLocaleDateString('es-BO',{weekday:'short',day:'numeric',month:'short'});
   document.getElementById('fecha').textContent=new Date().toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  // Reset tabs UI
+  document.querySelectorAll('.group-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('group-empty').style.display='flex';
+  document.getElementById('product-list').style.display='none';
   showScreen('screen-app');showNav();
   document.getElementById('nav-app').classList.add('active');
-  render();initTutorial();
+  updateTotals();updateTabCounts();initTutorial();
 }
 
 // ━━━━━━━ MENU ━━━━━━━
@@ -1162,6 +1257,46 @@ function addMovement(type,itemId,delta,prev,next,reason){
   saveMovements();
 }
 
+// ━━━━━━━ GROUP TABS ━━━━━━━
+const GROUP_LABELS = {
+  hot:   {label:'Calientes', icon:'☕'},
+  cold:  {label:'Fríos',     icon:'🧊'},
+  snack: {label:'Snacks',    icon:'🌭'},
+  combo: {label:'Combos',    icon:'⚡'},
+};
+let currentGroup = null;
+
+function selectGroup(group){
+  currentGroup = group;
+  // Update tab styles
+  document.querySelectorAll('.group-tab').forEach(t => t.classList.remove('active'));
+  const activeTab = document.getElementById('gtab-'+group);
+  if(activeTab) activeTab.classList.add('active');
+  // Show list, hide empty state
+  document.getElementById('group-empty').style.display = 'none';
+  document.getElementById('product-list').style.display = 'flex';
+  renderGroup();
+}
+
+function updateTabCounts(){
+  ['hot','cold','snack','combo'].forEach(g=>{
+    const tab = document.getElementById('gtab-'+g);
+    if(!tab) return;
+    const total = products
+      .filter(p=>(p.group||'hot')===g)
+      .reduce((s,p)=>s+getCount(p.name), 0);
+    let countEl = tab.querySelector('.group-tab-count');
+    if(!countEl){
+      countEl = document.createElement('span');
+      countEl.className = 'group-tab-count';
+      const footer = tab.querySelector('.gtab-footer');
+      if(footer) footer.appendChild(countEl);
+      else tab.appendChild(countEl);
+    }
+    countEl.textContent = total > 0 ? total : '';
+  });
+}
+
 // ━━━━━━━ RENDER VENTAS ━━━━━━━
 function updateTotals(){
   const totalU=sales.length;
@@ -1175,39 +1310,43 @@ function updateTotals(){
 }
 
 function updateCardCount(idx){
-  // Only update the specific card that changed — no full DOM rebuild
+  // Find the card by its data-idx attribute
   const totalU=sales.length;
   const p=products[idx];
   const cnt=getCount(p.name);
   const pct=totalU>0?Math.round(cnt/totalU*100):0;
   const sub=(cnt*(p.price||0)).toFixed(2);
   const grUsd=cnt*(p.grams||0);
-  const cards=document.querySelectorAll('.prod-card');
-  const card=cards[idx];
+  const card=document.querySelector(`.prod-card[data-idx="${idx}"]`);
   if(!card)return;
   card.querySelector('.ctrl-count').textContent=cnt;
   card.querySelector('.prod-sub').textContent=cnt>0?pct+'% · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas';
   const minusBtn=card.querySelectorAll('.ctrl-btn')[0];
   minusBtn.disabled=cnt===0;
+  updateTabCounts();
 }
 
 function render(){
+  updateTotals();
+  updateTabCounts();
+  if(currentGroup) renderGroup();
+}
+
+function renderGroup(){
   const list=document.getElementById('product-list');
   const totalU=sales.length;
-  const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
-  const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
-  const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
-  document.getElementById('total-unidades').textContent=totalU;
-  document.getElementById('total-dinero').textContent='Bs. '+totalBs.toFixed(2);
-  document.getElementById('total-grams').textContent=totalG>=1000?(totalG/1000).toFixed(2)+' kg':totalG+' g';
-  document.getElementById('top-producto').textContent=top&&top.cnt>0?top.name:'—';
+  const filtered=products.map((p,i)=>({p,i})).filter(({p})=>(p.group||'hot')===currentGroup);
   list.innerHTML='';
-  if(!products.length){list.innerHTML='<p style="color:var(--text3);text-align:center;padding:2rem">Sin productos.</p>';return;}
+  if(!filtered.length){
+    list.innerHTML='<p style="color:var(--text3);text-align:center;padding:2rem;font-size:13px">Sin productos en esta categoría.</p>';
+    return;
+  }
   const frag=document.createDocumentFragment();
-  products.forEach((p,i)=>{
+  filtered.forEach(({p,i})=>{
     const cnt=getCount(p.name),pct=totalU>0?Math.round(cnt/totalU*100):0;
     const sub=(cnt*(p.price||0)).toFixed(2),grUsd=cnt*(p.grams||0);
     const card=document.createElement('div');card.className='prod-card';
+    card.dataset.idx=i;
     card.innerHTML=`<div class="prod-icon"><svg width="18" height="18" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg></div><div class="prod-info"><div class="prod-name">${p.name}</div><div class="prod-meta" onclick="openModal(${i})"><span>${p.price>0?'Bs. '+p.price.toFixed(2):'+ precio'}</span><span>${p.grams>0?p.grams+'g':'sin café'}</span><svg width="11" height="11" style="color:var(--text3)"><use href="#ic-edit"/></svg></div><div class="prod-sub">${cnt>0?pct+'% · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas'}</div></div><div class="prod-controls"><button class="ctrl-btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button><span class="ctrl-count">${cnt}</span><button class="ctrl-btn plus" onclick="change(${i},1)">+</button></div><button class="del-btn" onclick="deleteProduct(${i})">✕</button>`;
     frag.appendChild(card);
   });
