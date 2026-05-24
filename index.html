@@ -1037,35 +1037,51 @@ body{
 </div>
 
 <!-- DINE-IN SHEET -->
-<div class="fab-sheet" id="dinein-sheet">
-  <div class="fab-backdrop" onclick="cancelDineIn()"></div>
-  <div class="fab-panel" style="padding-bottom:calc(1.5rem + var(--safe-bottom))">
-    <h3 id="dinein-title">¿Cómo lo lleva?</h3>
-    <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.6">
-      Elegí si usa vaso descartable o taza del local.
-    </p>
-    <div style="display:flex;flex-direction:column;gap:10px">
+<div id="dinein-sheet" style="
+  display:none;position:fixed;inset:0;z-index:200;
+  align-items:flex-end;justify-content:center;">
+  <div onclick="cancelDineIn()" style="
+    position:absolute;inset:0;background:rgba(0,0,0,.75);"></div>
+  <div style="
+    position:relative;width:100%;max-width:480px;
+    background:#1a1608;
+    border:1px solid var(--border);border-top:2px solid var(--gold);
+    border-radius:20px 20px 0 0;
+    padding:1.5rem 1.25rem calc(1.75rem + var(--safe-bottom));
+    animation:sheetUp .22s ease;
+    z-index:201;">
+    <div style="
+      font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;
+      color:var(--text3);text-transform:uppercase;letter-spacing:.15em;
+      margin-bottom:4px">¿Cómo lo llevás?</div>
+    <div id="dinein-title" style="
+      font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;
+      color:var(--gold);margin-bottom:1.25rem;letter-spacing:.03em"></div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:1rem">
       <button onclick="confirmDineIn(true)" style="
-        background:linear-gradient(135deg,var(--gold2),var(--gold));color:#0a0800;
-        border:none;border-radius:14px;padding:1.1rem;
+        background:linear-gradient(135deg,var(--gold2),var(--gold));
+        color:#0a0800;border:none;border-radius:14px;padding:1.1rem 1rem;
         font-family:'Jost',sans-serif;font-size:13px;font-weight:700;
-        letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
-        display:flex;align-items:center;justify-content:center;gap:10px">
-        <span style="font-size:20px">🥤</span> Para llevar — vaso y tapa
+        letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:12px;
+        width:100%;">
+        <span style="font-size:22px">🥤</span> Para llevar — vaso y tapa
       </button>
       <button onclick="confirmDineIn(false)" style="
-        background:var(--bg3);color:var(--text);
-        border:1px solid var(--border);border-radius:14px;padding:1.1rem;
+        background:#222010;color:var(--text);
+        border:1px solid var(--border);border-radius:14px;padding:1.1rem 1rem;
         font-family:'Jost',sans-serif;font-size:13px;font-weight:700;
-        letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
-        display:flex;align-items:center;justify-content:center;gap:10px">
-        <span style="font-size:20px">☕</span> En el local — taza
+        letter-spacing:.06em;text-transform:uppercase;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:12px;
+        width:100%;">
+        <span style="font-size:22px">☕</span> En el local — taza
       </button>
     </div>
     <button onclick="cancelDineIn()" style="
-      display:block;margin:.85rem auto 0;background:transparent;border:none;
-      color:var(--text3);font-size:10px;cursor:pointer;
-      font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.12em">
+      display:block;margin:0 auto;background:transparent;border:none;
+      color:var(--text3);font-size:11px;cursor:pointer;
+      font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.12em;
+      padding:.5rem 1rem;">
       Cancelar
     </button>
   </div>
@@ -1441,7 +1457,7 @@ function change(i, delta){
     // Ask dine-in before registering
     pendingChangeIdx = i;
     document.getElementById('dinein-title').textContent = name;
-    document.getElementById('dinein-sheet').classList.add('open');
+    document.getElementById('dinein-sheet').style.display='flex';
     return;
   }
   // No cup involved — register directly
@@ -1449,14 +1465,14 @@ function change(i, delta){
 }
 
 function confirmDineIn(takeaway){
-  document.getElementById('dinein-sheet').classList.remove('open');
+  document.getElementById('dinein-sheet').style.display='none';
   if(pendingChangeIdx === null) return;
   applyChange(pendingChangeIdx, 1, takeaway);
   pendingChangeIdx = null;
 }
 
 function cancelDineIn(){
-  document.getElementById('dinein-sheet').classList.remove('open');
+  document.getElementById('dinein-sheet').style.display='none';
   pendingChangeIdx = null;
 }
 
