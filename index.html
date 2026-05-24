@@ -1036,6 +1036,41 @@ body{
   </div>
 </div>
 
+<!-- DINE-IN SHEET -->
+<div class="fab-sheet" id="dinein-sheet">
+  <div class="fab-backdrop" onclick="cancelDineIn()"></div>
+  <div class="fab-panel" style="padding-bottom:calc(1.5rem + var(--safe-bottom))">
+    <h3 id="dinein-title">¿Cómo lo lleva?</h3>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:1.25rem;line-height:1.6">
+      Elegí si usa vaso descartable o taza del local.
+    </p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button onclick="confirmDineIn(true)" style="
+        background:linear-gradient(135deg,var(--gold2),var(--gold));color:#0a0800;
+        border:none;border-radius:14px;padding:1.1rem;
+        font-family:'Jost',sans-serif;font-size:13px;font-weight:700;
+        letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:20px">🥤</span> Para llevar — vaso y tapa
+      </button>
+      <button onclick="confirmDineIn(false)" style="
+        background:var(--bg3);color:var(--text);
+        border:1px solid var(--border);border-radius:14px;padding:1.1rem;
+        font-family:'Jost',sans-serif;font-size:13px;font-weight:700;
+        letter-spacing:.08em;text-transform:uppercase;cursor:pointer;
+        display:flex;align-items:center;justify-content:center;gap:10px">
+        <span style="font-size:20px">☕</span> En el local — taza
+      </button>
+    </div>
+    <button onclick="cancelDineIn()" style="
+      display:block;margin:.85rem auto 0;background:transparent;border:none;
+      color:var(--text3);font-size:10px;cursor:pointer;
+      font-family:'Jost',sans-serif;text-transform:uppercase;letter-spacing:.12em">
+      Cancelar
+    </button>
+  </div>
+</div>
+
 <!-- TUTORIAL -->
 <div id="tutorial-overlay">
   <div class="tut-card">
@@ -1055,6 +1090,22 @@ body{
 // ━━━━━━━ CONFIG ━━━━━━━
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto',svgHref:'#ic-plane'},teleferico:{name:'Teleférico Morado',svgHref:'#ic-cable'}};
+// Prices per location — aeropuerto has different prices
+const PRICES = {
+  aeropuerto: {
+    'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,
+    'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,
+    'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,
+    'Tucumana':10,'Tucumana Rematada':10,
+    'Combo Hot Dog + Americano':25,
+  },
+  teleferico: {} // uses DEFAULT_PRODUCTS prices
+};
+
+// Products that use cups/lids (affected by dine-in vs takeaway)
+const USES_CUP = new Set(['Americano','Latte','Cappuccino','Café Doble','Mocaccino',
+  'Iced Latte','Americano Frío','Mate','Combo Hot Dog + Americano','Combo Café + Tucumana']);
+
 const DEFAULT_PRODUCTS=[
   // Cafés calientes
   {name:'Americano',       price:12, grams:20, cat:'cafe',  group:'hot'},
@@ -1076,6 +1127,13 @@ const DEFAULT_PRODUCTS=[
   {name:'Combo Hot Dog + Americano', price:20, grams:20, cat:'combo', group:'combo'},
   {name:'Combo Café + Tucumana',     price:15, grams:20, cat:'combo', group:'combo'},
 ];
+
+// Apply location-specific prices
+function getPrice(productName){
+  const locPrices = PRICES[currentLoc] || {};
+  const p = products.find(p=>p.name===productName);
+  return locPrices[productName] ?? (p?p.price:0);
+}
 const DEFAULT_INVENTORY=[
   {id:'cafe',name:'Café',unit:'g',stock:0,minStock:500,category:'cafe',sachetMode:false},
   {id:'leche',name:'Leche',unit:'ml',stock:0,minStock:2000,category:'lacteo',sachetMode:true,sachetMl:1000},
@@ -1314,7 +1372,10 @@ function updateTabCounts(){
 // ━━━━━━━ RENDER VENTAS ━━━━━━━
 function updateTotals(){
   const totalU=sales.length;
-  const totalBs=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.price||0:0);},0);
+  // Use sale.price if stored, otherwise getPrice()
+  const totalBs=sales.reduce((s,sale)=>{
+    return s+(sale.price!=null?sale.price:getPrice(sale.name));
+  },0);
   const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
   const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
   document.getElementById('total-unidades').textContent=totalU;
@@ -1334,7 +1395,9 @@ function updateCardCount(idx){
   const card=document.querySelector(`.prod-card[data-idx="${idx}"]`);
   if(!card)return;
   card.querySelector('.ctrl-count').textContent=cnt;
-  card.querySelector('.prod-sub').textContent=cnt>0?pct+'% · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas';
+  const locP=getPrice(p.name);
+  const locSub2=(cnt*locP).toFixed(2);
+  card.querySelector('.prod-sub').textContent=cnt>0?pct+'% · Bs. '+locSub2+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas';
   const minusBtn=card.querySelectorAll('.ctrl-btn')[0];
   minusBtn.disabled=cnt===0;
   updateTabCounts();
@@ -1361,39 +1424,77 @@ function renderGroup(){
     const sub=(cnt*(p.price||0)).toFixed(2),grUsd=cnt*(p.grams||0);
     const card=document.createElement('div');card.className='prod-card';
     card.dataset.idx=i;
-    card.innerHTML=`<div class="prod-icon"><svg width="18" height="18" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg></div><div class="prod-info"><div class="prod-name">${p.name}</div><div class="prod-meta" onclick="openModal(${i})"><span>${p.price>0?'Bs. '+p.price.toFixed(2):'+ precio'}</span><span>${p.grams>0?p.grams+'g':'sin café'}</span><svg width="11" height="11" style="color:var(--text3)"><use href="#ic-edit"/></svg></div><div class="prod-sub">${cnt>0?pct+'% · Bs. '+sub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas'}</div></div><div class="prod-controls"><button class="ctrl-btn" onclick="change(${i},-1)" ${cnt===0?'disabled':''}>−</button><span class="ctrl-count">${cnt}</span><button class="ctrl-btn plus" onclick="change(${i},1)">+</button></div><button class="del-btn" onclick="deleteProduct(${i})">✕</button>`;
+    const locPrice=getPrice(p.name);
+    const locSub=(cnt*locPrice).toFixed(2);
+    card.innerHTML=`<div class="prod-icon"><svg width="18" height="18" style="color:var(--gold)"><use href="${getCatIcon(p.cat)}"/></svg></div><div class="prod-info"><div class="prod-name">${p.name}</div><div class="prod-meta" onclick="openModal(${i})"><span>Bs. ${locPrice.toFixed(2)}</span><span>${p.grams>0?p.grams+'g':'sin café'}</span><svg width="11" height="11" style="color:var(--text3)"><use href="#ic-edit"/></svg></div><div class="prod-sub">${cnt>0?pct+'% · Bs. '+locSub+(grUsd>0?' · '+grUsd+'g':''):'Sin ventas'}</div></div><div class="prod-controls"><button class="ctrl-btn" onclick="applyChange(${i},-1,true)" ${cnt===0?'disabled':''}>−</button><span class="ctrl-count">${cnt}</span><button class="ctrl-btn plus" onclick="change(${i},1)">+</button></div><button class="del-btn" onclick="deleteProduct(${i})">✕</button>`;
     frag.appendChild(card);
   });
   list.appendChild(frag);
 }
 
 // ━━━━━━━ CHANGE + INVENTORY ━━━━━━━
-function change(i,delta){
-  const name=products[i].name;
-  if(delta>0){
-    sales.push({name,ts:Date.now()});
-    const recipe=recipes[name]||[];
-    recipe.forEach(({id,qty})=>{
-      const item=inventory.find(it=>it.id===id);if(!item)return;
-      const prev=item.stock;item.stock=Math.max(0,item.stock-qty);
-      addMovement('sale',id,-qty,prev,item.stock,'Venta: '+name);
+let pendingChangeIdx = null;
+
+function change(i, delta){
+  const name = products[i].name;
+  if(delta > 0 && USES_CUP.has(name)){
+    // Ask dine-in before registering
+    pendingChangeIdx = i;
+    document.getElementById('dinein-title').textContent = name;
+    document.getElementById('dinein-sheet').classList.add('open');
+    return;
+  }
+  // No cup involved — register directly
+  applyChange(i, delta, true);
+}
+
+function confirmDineIn(takeaway){
+  document.getElementById('dinein-sheet').classList.remove('open');
+  if(pendingChangeIdx === null) return;
+  applyChange(pendingChangeIdx, 1, takeaway);
+  pendingChangeIdx = null;
+}
+
+function cancelDineIn(){
+  document.getElementById('dinein-sheet').classList.remove('open');
+  pendingChangeIdx = null;
+}
+
+function applyChange(i, delta, takeaway){
+  const name = products[i].name;
+  if(delta > 0){
+    const price = getPrice(name);
+    sales.push({name, ts:Date.now(), takeaway, price});
+    const recipe = recipes[name] || [];
+    recipe.forEach(({id, qty})=>{
+      // Skip vasos and tapas if dine-in (not takeaway)
+      if(!takeaway && (id==='vasos' || id==='tapas')) return;
+      const item = inventory.find(it=>it.id===id);
+      if(!item) return;
+      const prev = item.stock;
+      item.stock = Math.max(0, item.stock - qty);
+      addMovement('sale', id, -qty, prev, item.stock, 'Venta'+(takeaway?' (llevar)':' (local)')+': '+name);
     });
     saveInventory();
   } else {
-    const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
-    if(idx!==undefined){
-      sales.splice(idx,1);
-      const recipe=recipes[name]||[];
-      recipe.forEach(({id,qty})=>{
-        const item=inventory.find(it=>it.id===id);if(!item)return;
-        const prev=item.stock;item.stock+=qty;
-        addMovement('adjustment',id,qty,prev,item.stock,'Venta revertida: '+name);
+    const idx = sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
+    if(idx !== undefined){
+      const sale = sales[idx];
+      const wasTakeaway = sale.takeaway !== false; // default true
+      sales.splice(idx, 1);
+      const recipe = recipes[name] || [];
+      recipe.forEach(({id, qty})=>{
+        if(!wasTakeaway && (id==='vasos' || id==='tapas')) return;
+        const item = inventory.find(it=>it.id===id);
+        if(!item) return;
+        const prev = item.stock;
+        item.stock += qty;
+        addMovement('adjustment', id, qty, prev, item.stock, 'Venta revertida: '+name);
       });
       saveInventory();
     }
   }
   saveSales();
-  // Incremental update — no full DOM rebuild
   updateCardCount(i);
   updateTotals();
 }
