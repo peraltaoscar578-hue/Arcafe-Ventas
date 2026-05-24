@@ -11,15 +11,15 @@
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'"/>
 <style>
 :root{
-  --gold:#c9a84c;--gold2:#e8c96a;--gold3:#f5e098;
-  --gold-dim:rgba(201,168,76,0.12);--gold-glow:rgba(201,168,76,0.25);
-  --bg:#06060a;--bg2:#0e0e18;--bg3:#161624;--bg4:#1e1e2e;
-  --glass:rgba(255,255,255,0.04);--glass2:rgba(255,255,255,0.07);
-  --border:rgba(201,168,76,0.18);--border2:rgba(255,255,255,0.06);
-  --text:#f0eade;--text2:#a09070;--text3:#5a5040;
-  --danger:#e05555;--danger-dim:rgba(224,85,85,0.12);
-  --green:#4daa56;--green-dim:rgba(77,170,86,0.12);
-  --orange:#d4882a;--orange-dim:rgba(212,136,42,0.12);
+  /* Paleta Arcafé — tomada del anuncio */
+  --gold:#b8942a;--gold2:#d4aa3a;--gold3:#e8c96a;
+  --gold-dim:rgba(184,148,42,0.15);--gold-glow:rgba(184,148,42,0.25);
+  --bg:#0a0800;--bg2:#110e02;--bg3:#1a1608;--bg4:#221e0e;
+  --border:rgba(184,148,42,0.22);--border2:rgba(184,148,42,0.10);
+  --text:#f0e8d0;--text2:#a08c5a;--text3:#6a5c38;
+  --danger:#c04040;--danger-dim:rgba(192,64,64,0.12);
+  --green:#4a9050;--green-dim:rgba(74,144,80,0.12);
+  --orange:#c4782a;--orange-dim:rgba(196,120,42,0.12);
   --nav-h:68px;--safe-bottom:env(safe-area-inset-bottom,0px);
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -174,7 +174,7 @@ body{
   position:sticky;top:0;z-index:20;
   padding:.85rem 1.1rem;
   display:flex;align-items:center;gap:10px;
-  background:rgba(6,6,10,.7);-webkit-
+  background:rgba(10,8,0,.95);-webkit-
   border-bottom:1px solid var(--border2);
 }
 .hdr-logo{width:34px;height:34px;border-radius:50%;overflow:hidden;border:1px solid var(--border);flex-shrink:0}
@@ -258,53 +258,45 @@ body{
 .group-tabs{
   display:grid;grid-template-columns:repeat(4,1fr);gap:8px;
   padding:.85rem 1.1rem 0;
+  margin-bottom:1rem;
 }
 .group-tab{
-  background:var(--bg3);border:1px solid var(--border2);
-  border-radius:16px;
+  background:var(--bg3);border:2px solid transparent;
+  border-radius:14px;
   display:flex;flex-direction:column;align-items:center;gap:0;
   cursor:pointer;font-family:'Jost',sans-serif;
-  transition:all .18s;overflow:hidden;position:relative;
+  transition:border-color .18s, transform .15s;
+  overflow:hidden;position:relative;
 }
-.group-tab:active{transform:scale(.97)}
+.group-tab:active{transform:scale(.96)}
 .group-tab.active{
-  border-color:rgba(201,168,76,.6);
+  border-color:var(--gold);
 }
 .group-tab.active::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 50%,rgba(201,168,76,.18) 100%);
+  content:'';position:absolute;bottom:0;left:0;right:0;height:48px;
+  background:linear-gradient(to top, rgba(184,148,42,.55), transparent);
   pointer-events:none;
 }
 .gtab-img{
   width:100%;aspect-ratio:1/1;object-fit:cover;
-  display:block;border-radius:14px 14px 0 0;
+  display:block;
 }
 .gtab-footer{
-  width:100%;padding:.55rem .6rem .5rem;
-  background:var(--bg3);
-  display:flex;align-items:center;justify-content:space-between;
-  transition:background .18s;
+  position:absolute;bottom:0;left:0;right:0;
+  padding:.4rem .5rem .45rem;
+  background:linear-gradient(to top, rgba(10,8,0,.85) 70%, transparent);
+  display:flex;align-items:flex-end;justify-content:center;
 }
-.group-tab.active .gtab-footer{background:rgba(201,168,76,.18)}
 .gtab-label{
-  font-size:10px;font-weight:700;color:var(--text2);
-  text-transform:uppercase;letter-spacing:.08em;
+  font-size:9px;font-weight:700;
+  color:var(--text);
+  text-transform:uppercase;letter-spacing:.1em;
   transition:color .18s;line-height:1;
+  text-align:center;
 }
-.group-tab.active .gtab-label{color:var(--gold)}
+.group-tab.active .gtab-label{color:var(--gold3)}
 .gtab-icon{display:none}
-.group-tab-count{
-  font-family:'Cormorant Garamond',serif;
-  font-size:18px;font-weight:700;
-  color:transparent;
-  transition:color .18s;min-height:18px;line-height:1;
-  min-width:20px;text-align:right;
-}
-.group-tab-count:not(:empty){color:var(--text2)}
-.group-tab.active .group-tab-count:not(:empty){
-  color:var(--gold);
-  text-shadow:0 0 8px rgba(201,168,76,.4);
-}
+.group-tab-count{display:none}
 
 /* ── SECTION TITLE ── */
 .sec-title{
@@ -315,7 +307,7 @@ body{
 .sec-title::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
 
 /* ── PRODUCT LIST ── */
-.prod-list{display:flex;flex-direction:column;gap:8px;padding:0 1.1rem;margin-bottom:1rem}
+.prod-list{display:flex;flex-direction:column;gap:8px;padding:0 1.1rem;margin-bottom:1rem;margin-top:0}
 .prod-card{
   background:var(--bg3);border:1px solid var(--border2);
   border-radius:16px;padding:.85rem 1rem;
@@ -409,7 +401,7 @@ body{
 /* ── BOTTOM NAV ── */
 .bottom-nav{
   position:fixed;bottom:0;left:0;right:0;z-index:30;
-  background:rgba(6,6,10,.85);
+  background:rgba(10,8,0,.95);
   border-top:1px solid var(--border2);-webkit-
   display:flex;align-items:center;justify-content:space-around;
   padding:.5rem 1rem calc(.5rem + var(--safe-bottom));
@@ -859,35 +851,25 @@ body{
     <div class="group-tabs" id="group-tabs">
       <button class="group-tab" onclick="selectGroup('hot')" id="gtab-hot">
         <img class="gtab-img" src="img-hot.png" alt="Cafés Calientes"/>
-        <div class="gtab-footer">
-          <span class="gtab-label">Calientes</span>
-        </div>
+        <div class="gtab-footer"><span class="gtab-label">Calientes</span></div>
       </button>
       <button class="group-tab" onclick="selectGroup('cold')" id="gtab-cold">
         <img class="gtab-img" src="img-cold.png" alt="Cafés Fríos"/>
-        <div class="gtab-footer">
-          <span class="gtab-label">Fríos</span>
-        </div>
+        <div class="gtab-footer"><span class="gtab-label">Fríos</span></div>
       </button>
       <button class="group-tab" onclick="selectGroup('snack')" id="gtab-snack">
         <img class="gtab-img" src="img-snack.png" alt="Snacks"/>
-        <div class="gtab-footer">
-          <span class="gtab-label">Snacks</span>
-        </div>
+        <div class="gtab-footer"><span class="gtab-label">Snacks</span></div>
       </button>
       <button class="group-tab" onclick="selectGroup('combo')" id="gtab-combo">
         <img class="gtab-img" src="img-combo.png" alt="Combos"/>
-        <div class="gtab-footer">
-          <span class="gtab-label">Combos</span>
-        </div>
+        <div class="gtab-footer"><span class="gtab-label">Combos</span></div>
       </button>
     </div>
 
     <!-- EMPTY STATE -->
-    <div id="group-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 1.5rem;text-align:center">
-      <div style="font-size:42px;margin-bottom:1rem;opacity:.4">☕</div>
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--text2);margin-bottom:6px">Seleccioná una categoría</div>
-      <div style="font-size:12px;color:var(--text3)">Tocá una de las pestañas para ver los productos</div>
+    <div id="group-empty" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem 1.5rem;text-align:center">
+      <div style="font-family:'Cormorant Garamond',serif;font-size:18px;color:var(--text3);letter-spacing:.05em">Seleccioná una categoría</div>
     </div>
 
     <div class="prod-list" id="product-list" style="display:none"></div>
