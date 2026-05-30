@@ -658,6 +658,7 @@ const INV_KEY=id=>'arcafe_inventory_v6_'+id;
 const RECIPES_KEY='arcafe_recipes_v6';
 const MOV_KEY=id=>'arcafe_inventory_movements_v6_'+id;
 const SESSION_KEY=id=>'arcafe_daily_sessions_v6_'+id;
+const SALE_PRICE_SCHEMA=1;
 
 // ━━━ STATE ━━━
 let currentLoc=null,editingIndex=null,adjItemId=null,employeeMode=false;
@@ -673,6 +674,7 @@ function loadAll(){
   if(raw){products=raw.map(p=>{const d=DEFAULT_PRODUCTS.find(d=>d.name===p.name);return{...(d||{}),...p,group:p.group||(d&&d.group)||'hot',cat:p.cat||(d&&d.cat)||'cafe'};});}
   else products=DEFAULT_PRODUCTS.map(p=>({...p}));
   sales=ls(SALES_KEY(currentLoc),[]);
+  migrateSales();
   inventory=ls(INV_KEY(currentLoc),DEFAULT_INVENTORY.map(i=>({...i})));
   recipes=ls(RECIPES_KEY,{...DEFAULT_RECIPES});
   movements=ls(MOV_KEY(currentLoc),[]);
@@ -762,9 +764,40 @@ function closeFab(){document.getElementById('fab-bg').classList.remove('on');}
 
 // ━━━ HELPERS ━━━
 const getCount=name=>sales.filter(s=>s.name===name).length;
-function getPrice(name){
-  if(employeeMode&&currentLoc==='aeropuerto'&&EMP_PRICES[name]!=null)return EMP_PRICES[name];
+const getProductSales=name=>sales.filter(s=>s.name===name);
+function getBasePrice(name){
   const lp=PRICES[currentLoc]||{};const p=products.find(p=>p.name===name);return lp[name]??(p?p.price:0);
+}
+// Pricing quotes are the extension point for employee discounts, promos,
+// coupons, airline rates, loyalty rewards and promotional combos.
+function getPriceQuote(name){
+  const basePrice=getBasePrice(name);
+  const employeeApplies=employeeMode&&currentLoc==='aeropuerto'&&EMP_PRICES[name]!=null;
+  const finalPrice=employeeApplies?EMP_PRICES[name]:basePrice;
+  const adjustments=employeeApplies?[{type:'employee',label:'Empleado',amount:basePrice-finalPrice}]:[];
+  return{schemaVersion:SALE_PRICE_SCHEMA,source:employeeApplies?'employee':'standard',location:currentLoc,basePrice,finalPrice,adjustments};
+}
+function getPrice(name){return getPriceQuote(name).finalPrice;}
+function createSale(name,tw){
+  const now=Date.now();
+  const quote=getPriceQuote(name);
+  return{name,ts:now,takeaway:tw,price:quote.finalPrice,pricing:{...quote,capturedAt:now}};
+}
+function getSalePrice(sale){
+  const price=Number(sale&&sale.price);
+  return Number.isFinite(price)?price:getPrice(sale.name);
+}
+function getProductRevenue(name){return getProductSales(name).reduce((s,sale)=>s+getSalePrice(sale),0);}
+function migrateSales(){
+  let changed=false;
+  sales=sales.map(sale=>{
+    const storedPrice=Number(sale.price);
+    if(Number.isFinite(storedPrice)&&sale.pricing&&sale.pricing.schemaVersion===SALE_PRICE_SCHEMA)return sale;
+    const price=Number.isFinite(storedPrice)?storedPrice:getPrice(sale.name);
+    changed=true;
+    return{...sale,price:Number.isFinite(price)?price:0,pricing:sale.pricing||{schemaVersion:SALE_PRICE_SCHEMA,source:'legacy',location:currentLoc,finalPrice:Number.isFinite(price)?price:0,migratedAt:Date.now()}};
+  });
+  if(changed)saveS();
 }
 const fmtQty=item=>item.unit==='ml'&&item.stock>=1000?(item.stock/1000).toFixed(1)+' L':item.stock+' '+item.unit;
 const stockClass=item=>item.stock<=0?'critical':item.stock<item.minStock?'warn':'ok';
@@ -800,7 +833,7 @@ function updateTabCounts(){
 // ━━━ TOTALS ━━━
 function updateTotals(){
   const totalU=sales.length;
-  const totalBs=sales.reduce((s,sale)=>s+(sale.price!=null?sale.price:getPrice(sale.name)),0);
+  const totalBs=sales.reduce((s,sale)=>s+getSalePrice(sale),0);
   const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
   const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
   document.getElementById('s-units').textContent=totalU;
@@ -821,7 +854,7 @@ function renderGroup(){
   const frag=document.createDocumentFragment();
   filtered.forEach(({p,i})=>{
     const cnt=getCount(p.name),pct=totalU>0?Math.round(cnt/totalU*100):0;
-    const lp=getPrice(p.name),sub=(cnt*lp).toFixed(2),gu=cnt*(p.grams||0);
+    const lp=getPrice(p.name),sub=getProductRevenue(p.name).toFixed(2),gu=cnt*(p.grams||0);
     const ico=CAT_ICONS[p.cat]||'☕';
     const card=document.createElement('div');
     card.className='pcard'+(cnt>0?' sold':'');
@@ -858,7 +891,7 @@ function renderGroup(){
 function updateCardCount(i){
   const totalU=sales.length,p=products[i],cnt=getCount(p.name);
   const pct=totalU>0?Math.round(cnt/totalU*100):0;
-  const lp=getPrice(p.name),sub=(cnt*lp).toFixed(2),gu=cnt*(p.grams||0);
+  const sub=getProductRevenue(p.name).toFixed(2),gu=cnt*(p.grams||0);
   const card=document.querySelector('.pcard[data-idx="'+i+'"]');
   if(!card)return;
   const badge=card.querySelector('.p-badge');if(badge)badge.textContent=cnt;
@@ -885,8 +918,7 @@ function cancelDin(){document.getElementById('din-bg').classList.remove('on');pe
 function applyChange(i,delta,tw){
   const name=products[i].name;
   if(delta>0){
-    const price=getPrice(name);
-    sales.push({name,ts:Date.now(),takeaway:tw,price});
+    sales.push(createSale(name,tw));
     const recipe=recipes[name]||[];
     recipe.forEach(({id,qty})=>{
       if(!tw&&(id==='vasos'||id==='tapas'))return;
@@ -1029,9 +1061,19 @@ function showCierreReport(){
 // ━━━ REPORTS ━━━
 function buildReportData(){
   const now=new Date(),dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const totalBs=sales.reduce((s,sale)=>s+(sale.price!=null?sale.price:getPrice(sale.name)),0);
+  const totalBs=sales.reduce((s,sale)=>s+getSalePrice(sale),0);
   const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
-  const rows=products.map(p=>{const cnt=getCount(p.name);return{name:p.name,cnt,bs:cnt*getPrice(p.name),grams:cnt*(p.grams||0),cat:p.cat||'cafe'};}).filter(r=>r.cnt>0).sort((a,b)=>b.cnt-a.cnt);
+  const byProduct=new Map();
+  sales.forEach(sale=>{
+    const p=products.find(p=>p.name===sale.name)||{};
+    const r=byProduct.get(sale.name)||{name:sale.name,cnt:0,bs:0,grams:0,cat:p.cat||'cafe'};
+    r.cnt++;
+    r.bs+=getSalePrice(sale);
+    r.grams+=p.grams||0;
+    r.unitPrice=r.cnt?r.bs/r.cnt:0;
+    byProduct.set(sale.name,r);
+  });
+  const rows=[...byProduct.values()].sort((a,b)=>b.cnt-a.cnt);
   const hourCounts={};sales.forEach(s=>{const h=new Date(s.ts).getHours();hourCounts[h]=(hourCounts[h]||0)+1;});
   const hours=Object.keys(hourCounts).map(Number).sort((a,b)=>a-b);
   const minH=hours.length?Math.min(...hours):0,maxH=hours.length?Math.max(...hours):0,maxVal=hours.length?Math.max(...Object.values(hourCounts)):1;
@@ -1084,7 +1126,7 @@ function downloadCSV(){
   const d=reportData;if(!d.dateStr)return;
   const loc=LOCS[currentLoc].name,dateISO=d.now.toISOString().slice(0,10);
   let csv='Local,Fecha,Producto,Unidades,Precio (Bs.),Total (Bs.),Cafe (g)\n';
-  d.rows.forEach(r=>{csv+='"'+loc+'","'+dateISO+'","'+r.name+'",'+r.cnt+','+getPrice(r.name).toFixed(2)+','+r.bs.toFixed(2)+','+r.grams+'\n';});
+  d.rows.forEach(r=>{csv+='"'+loc+'","'+dateISO+'","'+r.name+'",'+r.cnt+','+(r.unitPrice||0).toFixed(2)+','+r.bs.toFixed(2)+','+r.grams+'\n';});
   csv+='"'+loc+'","'+dateISO+'","TOTAL",'+sales.length+',,'+d.totalBs.toFixed(2)+','+d.totalG+'\n\nINVENTARIO\nInsumo,Stock,Unidad,Minimo\n';
   inventory.forEach(item=>{csv+='"'+item.name+'",'+item.stock+',"'+item.unit+'",'+item.minStock+'\n';});
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}),url=URL.createObjectURL(blob),a=document.createElement('a');
