@@ -621,9 +621,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 // ━━━ CONFIG ━━━
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto'},teleferico:{name:'Teleférico Morado'}};
-const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25},teleferico:{}};
-const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55};
-const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Expreso','Mocaccino','Chocolate','Iced Latte','Americano Frío','Mate','Combo Hot Dog + Americano','Combo Café + Tucumana']);
+const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25,'Frappé':22},teleferico:{}};
+const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55,'Frappé':20};
+const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Expreso','Mocaccino','Chocolate','Iced Latte','Americano Frío','Mate','Frappé','Combo Hot Dog + Americano','Combo Café + Tucumana']);
 const PRODUCT_IMAGES={
   'Americano':'products/americano.jpg',
   'Latte':'products/latte.jpg',
@@ -632,7 +632,11 @@ const PRODUCT_IMAGES={
   'Expreso':'products/expreso.jpg',
   'Chocolate':'products/chocolate.jpg',
   'Hot Dog Extralargo':'products/hot-dog-extralargo.jpg',
-  'Tucumana':'products/tucumana.jpg'
+  'Tucumana':'products/tucumana.jpg',
+  'Mate':'products/mate.jpg',
+  'Iced Latte':'products/iced-latte.jpg',
+  'Americano Frío':'products/americano-frio.jpg',
+  'Frappé':'products/frappe.jpg',
 };
 const DEFAULT_PRODUCTS=[
   {id:'americano',name:'Americano',price:12,grams:20,cat:'cafe',group:'hot',imagePath:'products/americano.jpg'},
@@ -640,9 +644,10 @@ const DEFAULT_PRODUCTS=[
   {id:'cappuccino',name:'Cappuccino',price:16,grams:20,cat:'cafe',group:'hot',imagePath:'products/cappuccino.jpg'},
   {name:'Café Doble',price:19,grams:21,cat:'cafe',group:'hot'},
   {id:'mocaccino',name:'Mocaccino',price:18,grams:20,cat:'cafe',group:'hot',imagePath:'products/mocaccino.jpg'},
-  {name:'Mate',price:6,grams:0,cat:'mate',group:'hot'},
-  {name:'Iced Latte',price:16,grams:20,cat:'cafe',group:'cold'},
-  {name:'Americano Frío',price:12,grams:20,cat:'cafe',group:'cold'},
+  {id:'mate',name:'Mate',price:6,grams:0,cat:'mate',group:'hot',imagePath:'products/mate.jpg'},
+  {id:'iced-latte',name:'Iced Latte',price:16,grams:20,cat:'cafe',group:'cold',imagePath:'products/iced-latte.jpg'},
+  {id:'americano-frio',name:'Americano Frío',price:12,grams:20,cat:'cafe',group:'cold',imagePath:'products/americano-frio.jpg'},
+  {id:'frappe',name:'Frappé',price:22,grams:20,cat:'cafe',group:'cold',imagePath:'products/frappe.jpg',locales:['aeropuerto']},
   {id:'hot-dog-extralargo',name:'Hot Dog Extralargo',price:12,grams:0,cat:'hotdog',group:'snack',imagePath:'products/hot-dog-extralargo.jpg'},
   {name:'Hot Dog Chiquito',price:6,grams:0,cat:'hotdog',group:'snack'},
   {id:'tucumana',name:'Tucumana',price:7,grams:0,cat:'food',group:'snack',imagePath:'products/tucumana.jpg'},
@@ -699,6 +704,8 @@ function loadAll(){
   const raw=ls(PROD_KEY,null);
   if(raw){products=mergeDefaultProducts(raw);}
   else products=DEFAULT_PRODUCTS.map(p=>({...p}));
+  // Filter products by locale restriction
+  products=products.filter(p=>!p.locales||p.locales.includes(currentLoc));
   sales=ls(SALES_KEY(currentLoc),[]);
   migrateSales();
   inventory=ls(INV_KEY(currentLoc),DEFAULT_INVENTORY.map(i=>({...i})));
@@ -796,7 +803,7 @@ function normalizeProduct(p){
   const name=aliases[p.name]||p.name;
   const d=DEFAULT_PRODUCTS.find(d=>d.name===name)||{};
   const mappedImg=PRODUCT_IMAGES[name]||d.imagePath||'';
-  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada|expreso|chocolate|tucumana|hot-dog-extralargo)\.png$/.test(p.imagePath||'')||p.imagePath==='products/espresso.jpg'||p.imagePath==='products/chocolatada.jpg'||p.imagePath==='products/Hot Dog Extralargo.png'||p.imagePath==='products/Tucumana.png';
+  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada|expreso|chocolate|tucumana|hot-dog-extralargo|mate|iced-latte|americano-frio|frappe)\.png$/.test(p.imagePath||'')||p.imagePath==='products/espresso.jpg'||p.imagePath==='products/chocolatada.jpg'||p.imagePath==='products/Hot Dog Extralargo.png'||p.imagePath==='products/Tucumana.png';
   return{...d,...p,name,id:p.id||d.id||slugify(name),group:p.group||d.group||'hot',cat:p.cat||d.cat||'cafe',imagePath:(!p.imagePath||legacyImg||mappedImg)?mappedImg:p.imagePath};
 }
 function mergeDefaultProducts(saved){
