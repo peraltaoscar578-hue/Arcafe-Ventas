@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v5';
+const CACHE = 'arcafe-v6';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -11,6 +11,8 @@ const FILES = [
   './img-snack.png',
   './products/americano.jpg',
   './products/cappuccino.jpg',
+  './products/chocolatada.jpg',
+  './products/espresso.jpg',
   './products/latte.jpg',
   './products/mocaccino.jpg'
 ];
