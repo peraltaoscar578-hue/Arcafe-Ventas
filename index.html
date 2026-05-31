@@ -689,7 +689,7 @@ const ls=(k,d)=>{try{const s=localStorage.getItem(k);if(s)return JSON.parse(s);}
 const ss=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
 function loadAll(){
   const raw=ls(PROD_KEY,null);
-  if(raw){products=raw.map(p=>normalizeProduct(p));}
+  if(raw){products=mergeDefaultProducts(raw);}
   else products=DEFAULT_PRODUCTS.map(p=>({...p}));
   sales=ls(SALES_KEY(currentLoc),[]);
   migrateSales();
@@ -707,7 +707,7 @@ function saveSess(){const tk=new Date().toISOString().slice(0,10);const s=ls(SES
 
 // ━━━ SPLASH ━━━
 window.addEventListener('load',()=>{
-  try{const raw=localStorage.getItem(PROD_KEY);if(raw){const p=JSON.parse(raw);let ns=false;const normalized=p.map(pr=>{const n=normalizeProduct(pr);if(JSON.stringify(n)!==JSON.stringify(pr))ns=true;return n;});if(ns)localStorage.setItem(PROD_KEY,JSON.stringify(normalized));}}catch(e){}
+  try{const raw=localStorage.getItem(PROD_KEY);if(raw){const p=JSON.parse(raw);const normalized=mergeDefaultProducts(p);if(JSON.stringify(normalized)!==JSON.stringify(p))localStorage.setItem(PROD_KEY,JSON.stringify(normalized));}}catch(e){}
   setTimeout(()=>{document.getElementById('splash').classList.add('out');setTimeout(()=>{document.getElementById('splash').style.display='none';initPin();},500);},2000);
 });
 
@@ -787,6 +787,13 @@ function normalizeProduct(p){
   const d=DEFAULT_PRODUCTS.find(d=>d.name===p.name)||{};
   const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada)\.png$/.test(p.imagePath||'');
   return{...d,...p,id:p.id||d.id||slugify(p.name),group:p.group||d.group||'hot',cat:p.cat||d.cat||'cafe',imagePath:(!p.imagePath||legacyImg)?(d.imagePath||''):p.imagePath};
+}
+function mergeDefaultProducts(saved){
+  const merged=(saved||[]).map(p=>normalizeProduct(p));
+  DEFAULT_PRODUCTS.forEach(d=>{
+    if(!merged.some(p=>p.name===d.name))merged.push({...d});
+  });
+  return merged;
 }
 const getCount=name=>sales.filter(s=>s.name===name).length;
 const getProductSales=name=>sales.filter(s=>s.name===name);
