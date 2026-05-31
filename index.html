@@ -621,17 +621,23 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 // ━━━ CONFIG ━━━
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto'},teleferico:{name:'Teleférico Morado'}};
-const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Espresso':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25},teleferico:{}};
-const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Espresso':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55};
-const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Espresso','Mocaccino','Chocolatada','Iced Latte','Americano Frío','Mate','Combo Hot Dog + Americano','Combo Café + Tucumana']);
+const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25},teleferico:{}};
+const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55};
+const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Expreso','Mocaccino','Chocolate','Iced Latte','Americano Frío','Mate','Combo Hot Dog + Americano','Combo Café + Tucumana']);
+const PRODUCT_IMAGES={
+  'Americano':'products/americano.jpg',
+  'Latte':'products/latte.jpg',
+  'Cappuccino':'products/cappuccino.jpg',
+  'Mocaccino':'products/mocaccino.jpg',
+  'Expreso':'products/expreso.jpg',
+  'Chocolate':'products/chocolate.jpg'
+};
 const DEFAULT_PRODUCTS=[
   {id:'americano',name:'Americano',price:12,grams:20,cat:'cafe',group:'hot',imagePath:'products/americano.jpg'},
   {id:'latte',name:'Latte',price:16,grams:20,cat:'cafe',group:'hot',imagePath:'products/latte.jpg'},
   {id:'cappuccino',name:'Cappuccino',price:16,grams:20,cat:'cafe',group:'hot',imagePath:'products/cappuccino.jpg'},
   {name:'Café Doble',price:19,grams:21,cat:'cafe',group:'hot'},
-  {id:'espresso',name:'Espresso',price:19,grams:21,cat:'cafe',group:'hot',imagePath:'products/espresso.jpg'},
   {id:'mocaccino',name:'Mocaccino',price:18,grams:20,cat:'cafe',group:'hot',imagePath:'products/mocaccino.jpg'},
-  {id:'chocolatada',name:'Chocolatada',price:0,grams:0,cat:'cafe',group:'hot',imagePath:'products/chocolatada.jpg'},
   {name:'Mate',price:6,grams:0,cat:'mate',group:'hot'},
   {name:'Iced Latte',price:16,grams:20,cat:'cafe',group:'cold'},
   {name:'Americano Frío',price:12,grams:20,cat:'cafe',group:'cold'},
@@ -784,12 +790,18 @@ function closeFab(){document.getElementById('fab-bg').classList.remove('on');}
 // ━━━ HELPERS ━━━
 const slugify=s=>(s||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 function normalizeProduct(p){
-  const d=DEFAULT_PRODUCTS.find(d=>d.name===p.name)||{};
-  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada)\.png$/.test(p.imagePath||'');
-  return{...d,...p,id:p.id||d.id||slugify(p.name),group:p.group||d.group||'hot',cat:p.cat||d.cat||'cafe',imagePath:(!p.imagePath||legacyImg)?(d.imagePath||''):p.imagePath};
+  const aliases={'Espresso':'Expreso','Chocolatada':'Chocolate'};
+  const name=aliases[p.name]||p.name;
+  const d=DEFAULT_PRODUCTS.find(d=>d.name===name)||{};
+  const mappedImg=PRODUCT_IMAGES[name]||d.imagePath||'';
+  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada|expreso|chocolate)\.png$/.test(p.imagePath||'')||p.imagePath==='products/espresso.jpg'||p.imagePath==='products/chocolatada.jpg';
+  return{...d,...p,name,id:p.id||d.id||slugify(name),group:p.group||d.group||'hot',cat:p.cat||d.cat||'cafe',imagePath:(!p.imagePath||legacyImg||mappedImg)?mappedImg:p.imagePath};
 }
 function mergeDefaultProducts(saved){
-  const merged=(saved||[]).map(p=>normalizeProduct(p));
+  const merged=[];
+  (saved||[]).map(p=>normalizeProduct(p)).forEach(p=>{
+    if(!merged.some(x=>x.name===p.name))merged.push(p);
+  });
   DEFAULT_PRODUCTS.forEach(d=>{
     if(!merged.some(p=>p.name===d.name))merged.push({...d});
   });
