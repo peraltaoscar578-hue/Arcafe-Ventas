@@ -1,5 +1,19 @@
-const CACHE = 'arcafe-v3';
-const FILES = ['./index.html', './manifest.json', './logo.png', './icon-192.png', './icon-512.png'];
+const CACHE = 'arcafe-v5';
+const FILES = [
+  './index.html',
+  './manifest.json',
+  './logo.png',
+  './icon-192.png',
+  './icon-512.png',
+  './img-cold.png',
+  './img-combo.png',
+  './img-hot.png',
+  './img-snack.png',
+  './products/americano.jpg',
+  './products/cappuccino.jpg',
+  './products/latte.jpg',
+  './products/mocaccino.jpg'
+];
 
 // Install: cache all files fresh
 self.addEventListener('install', e => {
