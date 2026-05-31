@@ -24,8 +24,10 @@ Las ventas historicas siguen usando `name` y `price`, asi que agregar o cambiar 
 - `products/cappuccino.jpg`
 - `products/chocolate.jpg`
 - `products/expreso.jpg`
+- `products/hot-dog-extralargo.jpg`
 - `products/latte.jpg`
 - `products/mocaccino.jpg`
+- `products/tucumana.jpg`
 
 ## Como agregar futuros productos
 

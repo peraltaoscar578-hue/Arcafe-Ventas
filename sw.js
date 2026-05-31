@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v8';
+const CACHE = 'arcafe-v9';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -13,8 +13,10 @@ const FILES = [
   './products/cappuccino.jpg',
   './products/chocolate.jpg',
   './products/expreso.jpg',
+  './products/hot-dog-extralargo.jpg',
   './products/latte.jpg',
-  './products/mocaccino.jpg'
+  './products/mocaccino.jpg',
+  './products/tucumana.jpg'
 ];
 
 // Install: cache all files fresh
