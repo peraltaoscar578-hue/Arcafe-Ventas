@@ -2,37 +2,89 @@
 
 ## Objetivo
 
-Las ventas registradas deben conservar el precio exacto que tenian al momento de venderse. Cambiar precios actuales, activar modo empleado o agregar promociones futuras no debe modificar el historial.
+Las ventas registradas conservan el precio exacto que tenian al momento de venderse. Cambiar precios actuales, activar modo empleado o agregar promociones futuras no modifica el historial.
 
-## Cambios realizados
+## Arquitectura actual
 
-- Cada venta nueva se crea con un snapshot de precio: `price` y `pricing`.
-- `price` sigue siendo el campo principal para compatibilidad con reportes existentes.
-- `pricing` guarda metadatos de la regla aplicada: version, origen, local, precio base, precio final, ajustes y fecha de captura.
-- Las ventas antiguas se migran al cargar el local:
-  - si ya tenian `price`, se conserva ese valor;
-  - si no tenian `price`, se fija una vez usando el precio vigente como fallback;
-  - se agrega `pricing.source = "legacy"` para identificar ventas migradas.
-- Los totales, subtotales por producto, informes y CSV suman `sale.price` de cada venta en lugar de recalcular con el precio actual del producto.
-- El cache del service worker subio a `arcafe-v4` para forzar la actualizacion de la app instalada.
+Cada venta se crea con un snapshot inmutable:
+
+```js
+{
+  name: "Americano",
+  ts: 1748000000000,
+  takeaway: true,
+  price: 15,           // precio final cobrado — campo principal
+  pricing: {
+    version: 1,
+    source: "employee" | "location" | "base" | "legacy",
+    location: "aeropuerto",
+    basePrice: 15,
+    finalPrice: 15,
+    adjustments: [],
+    capturedAt: "2026-05-24T..."
+  }
+}
+```
+
+- `price`: campo principal para totales y reportes.
+- `pricing`: metadatos de auditoria. No se usa para calcular — solo para consulta.
+- Las ventas antiguas sin `price` se migran al cargar el local con `migrateSales()`, conservando el valor guardado o usando el precio vigente como fallback con `pricing.source = "legacy"`.
+
+## Precios actuales por local
+
+### Aeropuerto
+
+| Producto                    | Precio público | Precio empleado |
+|-----------------------------|---------------|-----------------|
+| Americano                   | Bs. 15        | Bs. 13          |
+| Latte                       | Bs. 19        | Bs. 17          |
+| Cappuccino                  | Bs. 19        | Bs. 17          |
+| Café Doble                  | Bs. 12        | Bs. 10          |
+| Mocaccino                   | Bs. 22        | Bs. 20          |
+| Iced Latte                  | Bs. 19        | Bs. 17          |
+| Americano Frío              | Bs. 15        | Bs. 13          |
+| Frappé                      | Bs. 22        | Bs. 20          |
+| Hot Dog Extralargo          | Bs. 15        | Bs. 13          |
+| Hot Dog Chiquito            | Bs. 15        | Bs. 13          |
+| Tucumana                    | Bs. 10        | Bs. 9           |
+| Tucumana Rematada           | Bs. 10        | Bs. 9           |
+| Bolsa de Café               | —             | Bs. 55          |
+| Combo Hot Dog + Americano   | Bs. 25        | —               |
+
+### Teleférico Morado
+
+Usa precios base de `DEFAULT_PRODUCTS`. Sin descuentos de empleado.
+
+## Funciones clave
+
+| Funcion              | Uso                                                          |
+|----------------------|--------------------------------------------------------------|
+| `getPrice(name)`     | Precio actual para mostrar en tarjeta antes de vender        |
+| `getPriceQuote(name)`| Genera el quote con todas las reglas activas aplicadas       |
+| `createSale(name, tw)`| Registra la venta con snapshot inmutable de precio          |
+| `getSalePrice(sale)` | Lee `sale.price` para reportes y totales historicos          |
+| `getProductRevenue(name)` | Suma `sale.price` de todas las ventas del producto      |
 
 ## Punto de extension
 
-La funcion `getPriceQuote(name)` en `index.html` es el punto donde deben agregarse reglas futuras:
+`getPriceQuote(name)` en `index.html` es donde se agregan reglas futuras:
 
-- descuentos por empleado,
-- promociones temporales,
-- cupones,
-- combos promocionales,
-- descuentos por aerolinea,
-- descuentos por cliente frecuente.
+- promociones temporales
+- cupones
+- combos promocionales
+- descuentos por aerolinea
+- descuentos por cliente frecuente
 
-Toda regla nueva debe modificar el quote antes de crear la venta. Una vez creada la venta, el precio final debe quedar guardado en `sale.price` y no debe depender de reglas activas en el futuro.
+Toda regla nueva modifica el quote antes de crear la venta. Una vez creada, el precio queda fijo en `sale.price` y no depende de reglas futuras.
 
-## Regla practica
+## Productos con restriccion por local
 
-- `getPrice(name)`: solo para mostrar o calcular el precio actual antes de vender.
-- `createSale(name, takeaway)`: para registrar una venta con snapshot historico.
-- `getSalePrice(sale)`: para reportes y totales historicos.
-- `getProductRevenue(name)`: para subtotales por producto basados en ventas reales.
+| Producto | Disponible en          |
+|----------|------------------------|
+| Frappé   | Solo Aeropuerto        |
 
+Se controla con el campo `locales: ['aeropuerto']` en `DEFAULT_PRODUCTS` y se filtra en `loadAll()`.
+
+## Version actual del service worker cache
+
+`arcafe-v10`
