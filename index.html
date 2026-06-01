@@ -323,6 +323,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 .tut-skip{display:block;text-align:center;margin-top:.7rem;font-size:9px;color:var(--cream3);cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.1em;text-decoration:underline;text-underline-offset:3px}
 
 .pad-bot{height:calc(var(--nav) + var(--safe) + 8px)}
+.calib-preset-btn{flex:1;background:var(--ink3);border:1px solid rgba(255,255,255,.06);border-radius:var(--r);padding:9px 0;font-size:12px;font-weight:700;color:var(--cream3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.calib-preset-btn:active{background:var(--ga12);border-color:var(--gold);color:var(--gold)}
+.calib-preset-btn.active{background:var(--ga12);border-color:var(--gold);color:var(--gold)}
 </style>
 </head>
 <body>
@@ -389,6 +392,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
       <div class="tb-name">Arcafé</div>
       <div class="tb-sub" id="t-loc"></div>
     </div>
+    <div id="calib-badge" style="display:none;background:var(--ga12);border:1px solid var(--ga22);border-radius:6px;padding:3px 8px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);cursor:pointer;flex-shrink:0;white-space:nowrap" onclick="openCalib()">⚙ <span id="calib-badge-val">—</span>g</div>
     <button class="tb-emp" id="emp-toggle" onclick="toggleEmp()">Empleado</button>
     <div class="drop-wrap">
       <div class="tb-menu" onclick="toggleMenu()" id="menu-btn">···</div>
@@ -603,6 +607,56 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
   </div>
 </div>
 
+<!-- CALIBRACIÓN -->
+<div id="calib-bg" style="display:none;position:fixed;inset:0;z-index:500;align-items:center;justify-content:center;padding:1.5rem;background:rgba(0,0,0,.92)">
+  <div style="background:var(--ink2);border:1px solid var(--ga22);border-top:2px solid var(--gold);border-radius:var(--r-xl);padding:2rem 1.5rem;max-width:360px;width:100%;box-shadow:0 24px 64px rgba(0,0,0,.7)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--ga12);border:1px solid var(--ga22);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">⚙️</div>
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--gold2);letter-spacing:.03em;line-height:1">Calibración del día</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--cream3);margin-top:2px" id="calib-loc-sub"></div>
+      </div>
+    </div>
+    <p style="font-size:12px;color:var(--cream3);line-height:1.6;margin-bottom:1.5rem;border-top:1px solid rgba(255,255,255,.05);padding-top:1rem">
+      Ingresá los gramos de café con los que está calibrada la máquina hoy. Este valor se usará para descontar del inventario en cada café vendido.
+    </p>
+    <div id="calib-current" style="display:none;background:var(--ga12);border:1px solid var(--ga22);border-radius:var(--r);padding:.85rem 1rem;margin-bottom:1rem">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:9px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--cream3);margin-bottom:3px">Calibración activa</div>
+          <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--gold2)" id="calib-current-val">—</div>
+        </div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cream3)">g / café</div>
+      </div>
+    </div>
+    <div style="margin-bottom:1.25rem">
+      <div style="font-size:9px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--cream3);margin-bottom:8px">Gramos por café</div>
+      <div style="display:flex;align-items:center;gap:10px">
+        <input id="calib-input" type="number" min="1" max="50" step="0.5" placeholder="Ej: 18"
+          style="flex:1;background:var(--ink3);border:1px solid var(--ga22);border-radius:var(--r);padding:12px 14px;font-family:'DM Serif Display',serif;font-size:24px;color:var(--gold2);outline:none;text-align:center;width:100%"
+          oninput="calibValidate()"/>
+        <div style="font-size:12px;font-weight:700;color:var(--cream3);letter-spacing:.06em">g</div>
+      </div>
+      <div style="font-size:10px;color:var(--cream3);margin-top:6px;text-align:center">Rango recomendado: 14g – 22g</div>
+    </div>
+    <div style="display:flex;gap:6px;margin-bottom:1.25rem" id="calib-presets">
+      <button onclick="calibPreset(14)" class="calib-preset-btn">14g</button>
+      <button onclick="calibPreset(16)" class="calib-preset-btn">16g</button>
+      <button onclick="calibPreset(18)" class="calib-preset-btn">18g</button>
+      <button onclick="calibPreset(20)" class="calib-preset-btn">20g</button>
+    </div>
+    <div id="calib-err" style="font-size:11px;color:var(--red);min-height:16px;margin-bottom:.75rem;text-align:center"></div>
+    <button id="calib-confirm-btn" onclick="confirmCalib()" disabled style="
+      width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));
+      color:var(--ink);border:none;border-radius:var(--r);padding:14px 0;
+      font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+      letter-spacing:.14em;text-transform:uppercase;
+      box-shadow:0 4px 16px var(--ga35);opacity:.4;transition:opacity .2s">
+      Confirmar calibración
+    </button>
+  </div>
+</div>
+
 <!-- TUTORIAL -->
 <div id="tut-bg">
   <div class="tut-card">
@@ -621,8 +675,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 // ━━━ CONFIG ━━━
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto'},teleferico:{name:'Teleférico Morado'}};
-const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25,'Frappé':22},teleferico:{}};
-const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55,'Frappé':20};
+const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25,'Frappé':22,'Expreso':12,'Chocolate':22},teleferico:{'Expreso':8,'Chocolate':18}};
+const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55,'Frappé':20,'Expreso':10,'Chocolate':20};
 const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Expreso','Mocaccino','Chocolate','Iced Latte','Americano Frío','Mate','Frappé','Combo Hot Dog + Americano','Combo Café + Tucumana']);
 const PRODUCT_IMAGES={
   'Americano':'products/americano.jpg',
@@ -644,6 +698,8 @@ const DEFAULT_PRODUCTS=[
   {id:'cappuccino',name:'Cappuccino',price:16,grams:20,cat:'cafe',group:'hot',imagePath:'products/cappuccino.jpg'},
   {name:'Café Doble',price:19,grams:21,cat:'cafe',group:'hot'},
   {id:'mocaccino',name:'Mocaccino',price:18,grams:20,cat:'cafe',group:'hot',imagePath:'products/mocaccino.jpg'},
+  {id:'expreso',name:'Expreso',price:8,grams:21,cat:'cafe',group:'hot',imagePath:'products/expreso.jpg'},
+  {id:'chocolate',name:'Chocolate',price:18,grams:20,cat:'cafe',group:'hot',imagePath:'products/chocolate.jpg'},
   {id:'mate',name:'Mate',price:6,grams:0,cat:'mate',group:'hot',imagePath:'products/mate.jpg'},
   {id:'iced-latte',name:'Iced Latte',price:16,grams:20,cat:'cafe',group:'cold',imagePath:'products/iced-latte.jpg'},
   {id:'americano-frio',name:'Americano Frío',price:12,grams:20,cat:'cafe',group:'cold',imagePath:'products/americano-frio.jpg'},
@@ -673,6 +729,8 @@ const DEFAULT_RECIPES={
   'Cappuccino':[{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
   'Iced Latte':[{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
   'Mocaccino':[{id:'cafe',qty:20},{id:'leche',qty:150},{id:'chocolate',qty:1},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Expreso':[{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Chocolate':[{id:'leche',qty:200},{id:'chocolate',qty:2},{id:'vasos',qty:1},{id:'tapas',qty:1}],
   'Mate':[{id:'vasos',qty:1}],
   'Hot Dog Extralargo':[{id:'pan',qty:1},{id:'salchicha',qty:1}],
   'Hot Dog Chiquito':[{id:'pan',qty:1},{id:'salchicha',qty:1}],
@@ -692,7 +750,7 @@ const SESSION_KEY=id=>'arcafe_daily_sessions_v6_'+id;
 const SALE_PRICE_SCHEMA=1;
 
 // ━━━ STATE ━━━
-let currentLoc=null,editingIndex=null,adjItemId=null,employeeMode=false;
+let currentLoc=null,editingIndex=null,adjItemId=null,employeeMode=false,calibGrams=null;
 let products=[],sales=[],inventory=[],recipes={},movements=[],session=null;
 let reportData={},currentInvTab='stock',currentGroup=null;
 let pinBuffer='',pendingChangeIdx=null,holdTimer=null;
@@ -761,9 +819,8 @@ function selectLocation(id){
   document.getElementById('add-box').style.display='none';
   document.getElementById('prod-hint').style.display='none';
   document.getElementById('reset-lnk').style.display='none';
-  showScr('scr-app');showNav();
-  document.getElementById('nav-app').classList.add('on');
-  updateTotals();updateTabCounts();initTutorial();
+  // Show calibration first — mandatory before app
+  openCalib();
 }
 
 // ━━━ MENU ━━━
@@ -864,6 +921,15 @@ function migrateSales(){
   if(changed)saveS();
 }
 const fmtQty=item=>item.unit==='ml'&&item.stock>=1000?(item.stock/1000).toFixed(1)+' L':item.stock+' '+item.unit;
+// Returns grams to deduct for a coffee product — uses daily calibration if set
+function getGramsForProduct(p){
+  if(!p||!p.grams)return 0;
+  // Expreso and Café Doble keep their own grams — Chocolate has no café grams
+  if(p.name==='Expreso'||p.name==='Café Doble'||p.name==='Espresso'||p.name==='Chocolate')return p.grams;
+  // All other coffee/mate products use calibration when set
+  if(calibGrams&&p.grams>0&&(p.cat==='cafe'||p.cat==='mate'||p.cat==='combo'))return calibGrams;
+  return p.grams;
+}
 const stockClass=item=>item.stock<=0?'critical':item.stock<item.minStock?'warn':'ok';
 function addMovement(type,itemId,delta,prev,next,reason){
   const item=inventory.find(i=>i.id===itemId);
@@ -898,7 +964,7 @@ function updateTabCounts(){
 function updateTotals(){
   const totalU=sales.length;
   const totalBs=sales.reduce((s,sale)=>s+getSalePrice(sale),0);
-  const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
+  const totalG=sales.reduce((s,sale)=>{const p=products.find(prd=>prd.name===sale.name);return s+getGramsForProduct(p);},0);
   const top=products.map(p=>({name:p.name,cnt:getCount(p.name)})).sort((a,b)=>b.cnt-a.cnt)[0];
   document.getElementById('s-units').textContent=totalU;
   document.getElementById('s-total').textContent='Bs. '+totalBs.toFixed(2);
@@ -992,11 +1058,14 @@ function applyChange(i,delta,tw){
   if(delta>0){
     sales.push(createSale(name,tw));
     const recipe=recipes[name]||[];
+    const prod=products.find(p=>p.name===name);
     recipe.forEach(({id,qty})=>{
       if(!tw&&(id==='vasos'||id==='tapas'))return;
       const item=inventory.find(it=>it.id===id);if(!item)return;
-      const prev=item.stock;item.stock=Math.max(0,item.stock-qty);
-      addMovement('sale',id,-qty,prev,item.stock,'Venta'+(tw?' (llevar)':' (local)')+': '+name);
+      // Use calibrated grams for café ingredient
+      const actualQty=id==='cafe'?getGramsForProduct(prod):qty;
+      const prev=item.stock;item.stock=Math.max(0,item.stock-actualQty);
+      addMovement('sale',id,-actualQty,prev,item.stock,'Venta'+(tw?' (llevar)':' (local)')+': '+name+(id==='cafe'&&calibGrams?' (cal.'+calibGrams+'g)':''));
     });
     saveI();
   } else {
@@ -1005,11 +1074,14 @@ function applyChange(i,delta,tw){
       const wasTw=sales[idx].takeaway!==false;
       sales.splice(idx,1);
       const recipe=recipes[name]||[];
+      const prodR=products.find(p=>p.name===name);
       recipe.forEach(({id,qty})=>{
         if(!wasTw&&(id==='vasos'||id==='tapas'))return;
         const item=inventory.find(it=>it.id===id);if(!item)return;
-        const prev=item.stock;item.stock+=qty;
-        addMovement('adjustment',id,qty,prev,item.stock,'Venta revertida: '+name);
+        // Revert with same calibrated amount that was deducted
+        const actualQty=id==='cafe'?getGramsForProduct(prodR):qty;
+        const prev=item.stock;item.stock+=actualQty;
+        addMovement('adjustment',id,actualQty,prev,item.stock,'Venta revertida: '+name);
       });
       saveI();
     }
@@ -1028,7 +1100,15 @@ function addProduct(){
 function openModal(i){editingIndex=i;document.getElementById('modal-title').textContent=products[i].name;document.getElementById('modal-price').value=products[i].price||'';document.getElementById('modal-grams').value=products[i].grams||'';document.getElementById('modal-bg').classList.add('on');setTimeout(()=>document.getElementById('modal-price').focus(),100);}
 function saveModal(){if(editingIndex===null)return;products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;saveP();closeModal();if(currentGroup)renderGroup();}
 function closeModal(){document.getElementById('modal-bg').classList.remove('on');editingIndex=null;}
-function resetAll(){if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'?'))return;sales=[];saveS();render();}
+function resetAll(){
+  if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'? También se reiniciará la calibración del día.'))return;
+  sales=[];saveS();
+  calibGrams=null;
+  render();
+  // Show calibration again
+  calibFromReset=true;
+  openCalib();
+}
 
 // ━━━ INVENTORY ━━━
 function switchInvTab(tab){
@@ -1134,7 +1214,7 @@ function showCierreReport(){
 function buildReportData(){
   const now=new Date(),dateStr=now.toLocaleDateString('es-BO',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const totalBs=sales.reduce((s,sale)=>s+getSalePrice(sale),0);
-  const totalG=sales.reduce((s,sale)=>{const p=products.find(p=>p.name===sale.name);return s+(p?p.grams||0:0);},0);
+  const totalG=sales.reduce((s,sale)=>{const p=products.find(prd=>prd.name===sale.name);return s+getGramsForProduct(p);},0);
   const byProduct=new Map();
   sales.forEach(sale=>{
     const p=products.find(p=>p.name===sale.name)||{};
@@ -1255,6 +1335,75 @@ function downloadInvPDF(){
   const win=window.open(url,'_blank');if(win){win.onload=()=>{win.print();};}
   else{const a=document.createElement('a');a.href=url;a.download='Arcafe_Inventario_'+loc.replace(/ /g,'_')+'_'+now.toISOString().slice(0,10)+'.html';a.click();}
   setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+// ━━━ CALIBRACIÓN ━━━
+function openCalib(){
+  document.getElementById('calib-loc-sub').textContent=LOCS[currentLoc].name;
+  const inp=document.getElementById('calib-input');
+  inp.value=calibGrams||'';
+  document.getElementById('calib-err').textContent='';
+  const btn=document.getElementById('calib-confirm-btn');
+  btn.disabled=true;btn.style.opacity='.4';
+  // Show current calibration if set
+  const cur=document.getElementById('calib-current');
+  if(calibGrams){
+    cur.style.display='block';
+    document.getElementById('calib-current-val').textContent=calibGrams;
+  } else {
+    cur.style.display='none';
+  }
+  // Reset preset highlights
+  document.querySelectorAll('.calib-preset-btn').forEach(b=>b.classList.remove('active'));
+  calibValidate(); // enable button if pre-filled
+  document.getElementById('calib-bg').style.display='flex';
+  setTimeout(()=>inp.focus(),200);
+}
+
+function calibValidate(){
+  const val=parseFloat(document.getElementById('calib-input').value);
+  const btn=document.getElementById('calib-confirm-btn');
+  const err=document.getElementById('calib-err');
+  // Highlight matching preset
+  document.querySelectorAll('.calib-preset-btn').forEach(b=>{
+    b.classList.toggle('active', parseFloat(b.textContent)===val);
+  });
+  if(!val||isNaN(val)||val<=0){
+    btn.disabled=true;btn.style.opacity='.4';
+    err.textContent='';return;
+  }
+  if(val<8||val>40){
+    btn.disabled=true;btn.style.opacity='.4';
+    err.textContent='Valor fuera de rango (8g – 40g)';return;
+  }
+  err.textContent='';
+  btn.disabled=false;btn.style.opacity='1';
+}
+
+function calibPreset(g){
+  document.getElementById('calib-input').value=g;
+  calibValidate();
+}
+
+let calibFromReset=false;
+function confirmCalib(){
+  const val=parseFloat(document.getElementById('calib-input').value);
+  if(!val||val<8||val>40)return;
+  calibGrams=val;
+  document.getElementById('calib-bg').style.display='none';
+  // Show calibration badge in topbar
+  const badge=document.getElementById('calib-badge');
+  if(badge){badge.style.display='flex';document.getElementById('calib-badge-val').textContent=calibGrams;}
+  if(calibFromReset){
+    // Re-calibration after reset — app already visible, just re-render
+    calibFromReset=false;
+    render();
+  } else {
+    // First time — navigate to app
+    showScr('scr-app');showNav();
+    document.getElementById('nav-app').classList.add('on');
+    updateTotals();initTutorial();
+  }
 }
 
 // ━━━ TUTORIAL ━━━
