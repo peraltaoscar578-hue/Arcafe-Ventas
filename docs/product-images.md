@@ -29,13 +29,17 @@ Las ventas historicas siguen usando `name` y `price`, asi que agregar o cambiar 
 | Expreso           | `products/expreso.jpg`           | ✅ En repo |
 | Chocolate         | `products/chocolate.jpg`         | ✅ En repo |
 | Hot Dog Extralargo| `products/hot-dog-extralargo.jpg`| ✅ En repo |
+| Hot Dog Chiquito  | `products/hot-dog-chiquito.jpg`  | ✅ En repo |
 | Tucumana          | `products/tucumana.jpg`          | ✅ En repo |
-| Mate              | `products/mate.jpg`              | ⏳ Pendiente subir |
-| Iced Latte        | `products/iced-latte.jpg`        | ⏳ Pendiente subir |
-| Americano Frío    | `products/americano-frio.jpg`    | ⏳ Pendiente subir |
-| Frappé            | `products/frappe.jpg`            | ⏳ Pendiente subir |
+| Mate              | `products/mate.jpg`              | ✅ En repo |
+| Iced Latte        | `products/iced-latte.jpg`        | ✅ En repo |
+| Americano Frío    | `products/americano-frio.jpg`    | ✅ En repo |
+| Frappé            | `products/frappe.jpg`            | ✅ En repo |
+| Bolsa de Café     | `products/bolsa-de-cafe.jpg`     | ✅ En repo |
+| Combo Hot Dog + Americano | `products/combo-hot-dog-americano.jpg` | ✅ En repo |
+| Combo Café + Tucumana | `products/combo-cafe-tucumana.jpg` | ✅ En repo |
 
-Los productos con estado "Pendiente subir" muestran el emoji de fallback de su categoría hasta que se suba el archivo.
+Si un producto futuro no tiene imagen o el archivo falla, muestra el emoji de fallback de su categoría.
 
 ## Como agregar futuros productos
 
@@ -66,10 +70,14 @@ PRODUCT_IMAGES = {
   'Expreso':            'products/expreso.jpg',
   'Chocolate':          'products/chocolate.jpg',
   'Hot Dog Extralargo': 'products/hot-dog-extralargo.jpg',
+  'Hot Dog Chiquito':   'products/hot-dog-chiquito.jpg',
   'Tucumana':           'products/tucumana.jpg',
   'Mate':               'products/mate.jpg',
   'Iced Latte':         'products/iced-latte.jpg',
   'Americano Frío':     'products/americano-frio.jpg',
   'Frappé':             'products/frappe.jpg',
+  'Bolsa de Café':      'products/bolsa-de-cafe.jpg',
+  'Combo Hot Dog + Americano': 'products/combo-hot-dog-americano.jpg',
+  'Combo Café + Tucumana':     'products/combo-cafe-tucumana.jpg',
 };
 ```

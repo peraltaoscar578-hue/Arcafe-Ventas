@@ -174,8 +174,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 .bnav-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;background:transparent;border:none;font-family:'DM Sans',sans-serif;padding:.4rem .25rem;transition:background .1s}
 .bnav-item:active{background:var(--ga12)}
 .bnav-item.on .bnav-ico{color:var(--gold)}
+.bnav-item.on .bnav-ico i{filter:drop-shadow(0 0 4px rgba(200,168,75,.35))}
 .bnav-item.on .bnav-lbl{color:var(--gold)}
-.bnav-ico{font-size:20px;color:var(--cream4);transition:color .15s}
+.bnav-ico{font-size:22px;color:var(--cream4);transition:color .15s;line-height:1;display:flex;align-items:center;justify-content:center}
 .bnav-lbl{font-size:8px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--cream4);transition:color .15s}
 
 /* FAB */
@@ -521,16 +522,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 <!-- BOTTOM NAV -->
 <div class="bnav" id="bnav" style="display:none">
   <button class="bnav-item on" id="nav-app" onclick="navTo('app')">
-    <span class="bnav-ico">🏠</span><span class="bnav-lbl">Ventas</span>
+    <span class="bnav-ico"><i class="ti ti-shopping-cart" aria-hidden="true"></i></span>
+    <span class="bnav-lbl">Ventas</span>
   </button>
   <button class="bnav-item" id="nav-inventory" onclick="navTo('inventory')">
-    <span class="bnav-ico">📦</span><span class="bnav-lbl">Stock</span>
+    <span class="bnav-ico"><i class="ti ti-package" aria-hidden="true"></i></span>
+    <span class="bnav-lbl">Stock</span>
   </button>
   <button class="bnav-item" id="nav-report" onclick="navTo('report')">
-    <span class="bnav-ico">📊</span><span class="bnav-lbl">Inf. Ventas</span>
+    <span class="bnav-ico"><i class="ti ti-trending-up" aria-hidden="true"></i></span>
+    <span class="bnav-lbl">Inf. Ventas</span>
   </button>
   <button class="bnav-item" id="nav-inv-report" onclick="navTo('inv-report')">
-    <span class="bnav-ico">📋</span><span class="bnav-lbl">Inf. Stock</span>
+    <span class="bnav-ico"><i class="ti ti-license" aria-hidden="true"></i></span>
+    <span class="bnav-lbl">Inf. Stock</span>
   </button>
 </div>
 
@@ -675,8 +680,8 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 // ━━━ CONFIG ━━━
 const FIXED_PIN='1809';
 const LOCS={aeropuerto:{name:'Aeropuerto'},teleferico:{name:'Teleférico Morado'}};
-const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Hot Dog Chiquito':15,'Tucumana':10,'Tucumana Rematada':10,'Combo Hot Dog + Americano':25,'Frappé':22,'Expreso':12,'Chocolate':22},teleferico:{'Expreso':8,'Chocolate':18}};
-const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Hot Dog Chiquito':13,'Tucumana':9,'Tucumana Rematada':9,'Bolsa de Café':55,'Frappé':20,'Expreso':10,'Chocolate':20};
+const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Tucumana':10,'Combo Hot Dog + Americano':25,'Frappé':22,'Expreso':12,'Chocolate':22,'Bolsa de Café':55},teleferico:{'Expreso':8,'Chocolate':16}};
+const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Tucumana':9,'Bolsa de Café':55,'Frappé':20,'Expreso':10,'Chocolate':17};
 const USES_CUP=new Set(['Americano','Latte','Cappuccino','Café Doble','Expreso','Mocaccino','Chocolate','Iced Latte','Americano Frío','Mate','Frappé','Combo Hot Dog + Americano','Combo Café + Tucumana']);
 const PRODUCT_IMAGES={
   'Americano':'products/americano.jpg',
@@ -691,6 +696,10 @@ const PRODUCT_IMAGES={
   'Iced Latte':'products/iced-latte.jpg',
   'Americano Frío':'products/americano-frio.jpg',
   'Frappé':'products/frappe.jpg',
+  'Bolsa de Café':'products/bolsa-de-cafe.jpg',
+  'Hot Dog Chiquito':'products/hot-dog-chiquito.jpg',
+  'Combo Hot Dog + Americano':'products/combo-hot-dog-americano.jpg',
+  'Combo Café + Tucumana':'products/combo-cafe-tucumana.jpg'
 };
 const DEFAULT_PRODUCTS=[
   {id:'americano',name:'Americano',price:12,grams:20,cat:'cafe',group:'hot',imagePath:'products/americano.jpg'},
@@ -705,39 +714,46 @@ const DEFAULT_PRODUCTS=[
   {id:'americano-frio',name:'Americano Frío',price:12,grams:20,cat:'cafe',group:'cold',imagePath:'products/americano-frio.jpg'},
   {id:'frappe',name:'Frappé',price:22,grams:20,cat:'cafe',group:'cold',imagePath:'products/frappe.jpg',locales:['aeropuerto']},
   {id:'hot-dog-extralargo',name:'Hot Dog Extralargo',price:12,grams:0,cat:'hotdog',group:'snack',imagePath:'products/hot-dog-extralargo.jpg'},
-  {name:'Hot Dog Chiquito',price:6,grams:0,cat:'hotdog',group:'snack'},
+  {id:'hot-dog-chiquito',name:'Hot Dog Chiquito',price:6,grams:0,cat:'hotdog',group:'snack',imagePath:'products/hot-dog-chiquito.jpg',locales:['teleferico']},
   {id:'tucumana',name:'Tucumana',price:7,grams:0,cat:'food',group:'snack',imagePath:'products/tucumana.jpg'},
-  {name:'Tucumana Rematada',price:5,grams:0,cat:'food',group:'snack'},
-  {name:'Bolsa de Café',price:50,grams:250,cat:'bag',group:'snack'},
-  {name:'Combo Hot Dog + Americano',price:20,grams:20,cat:'combo',group:'combo'},
-  {name:'Combo Café + Tucumana',price:15,grams:20,cat:'combo',group:'combo'},
+  {id:'bolsa-de-cafe',name:'Bolsa de Café',price:50,grams:250,cat:'bag',group:'hot',imagePath:'products/bolsa-de-cafe.jpg'},
+  {id:'combo-hot-dog-americano',name:'Combo Hot Dog + Americano',price:20,grams:20,cat:'combo',group:'combo',imagePath:'products/combo-hot-dog-americano.jpg'},
+  {id:'combo-cafe-tucumana',name:'Combo Café + Tucumana',price:15,grams:20,cat:'combo',group:'combo',imagePath:'products/combo-cafe-tucumana.jpg'},
 ];
 const DEFAULT_INVENTORY=[
   {id:'cafe',name:'Café',unit:'g',stock:0,minStock:500,sachetMode:false},
-  {id:'leche',name:'Leche',unit:'ml',stock:0,minStock:2000,sachetMode:true,sachetMl:1000},
+  {id:'leche',name:'Leche',unit:'ml',stock:0,minStock:2000,sachetMode:false},
   {id:'vasos',name:'Vasos',unit:'u',stock:0,minStock:20,sachetMode:false},
   {id:'tapas',name:'Tapas',unit:'u',stock:0,minStock:20,sachetMode:false},
   {id:'chocolate',name:'Chocolate',unit:'u',stock:0,minStock:10,sachetMode:false},
   {id:'pan',name:'Pan HotDog',unit:'u',stock:0,minStock:10,sachetMode:false},
-  {id:'salchicha',name:'Salchicha',unit:'u',stock:0,minStock:10,sachetMode:false},
+  {id:'salchicha',name:'Salchicha grande',unit:'u',stock:0,minStock:10,sachetMode:false},
+  {id:'salchicha-chica',name:'Salchicha chica',unit:'u',stock:0,minStock:10,sachetMode:false,locales:['teleferico']},
+  {id:'vasos-frio',name:'Vasos fríos',unit:'u',stock:0,minStock:20,sachetMode:false},
+  {id:'tapas-frio',name:'Tapas frías',unit:'u',stock:0,minStock:20,sachetMode:false},
 ];
 const DEFAULT_RECIPES={
-  'Americano':[{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Americano Frío':[{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Café Doble':[{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Latte':[{id:'cafe',qty:20},{id:'leche',qty:250},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Cappuccino':[{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Iced Latte':[{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Mocaccino':[{id:'cafe',qty:20},{id:'leche',qty:150},{id:'chocolate',qty:1},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Expreso':[{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Chocolate':[{id:'leche',qty:200},{id:'chocolate',qty:2},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Mate':[{id:'vasos',qty:1}],
+  // Calientes — usan vasos y tapas normales
+  'Americano':    [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Café Doble':   [{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Expreso':      [{id:'cafe',qty:21},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Latte':        [{id:'cafe',qty:20},{id:'leche',qty:250},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Cappuccino':   [{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Mocaccino':    [{id:'cafe',qty:20},{id:'leche',qty:150},{id:'chocolate',qty:1},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Chocolate':    [{id:'leche',qty:200},{id:'chocolate',qty:2},{id:'vasos',qty:1},{id:'tapas',qty:1}],
+  'Mate':         [{id:'vasos',qty:1}],
+  // Fríos — usan vasos y tapas transparentes
+  'Americano Frío':[{id:'cafe',qty:20},{id:'vasos-frio',qty:1},{id:'tapas-frio',qty:1}],
+  'Iced Latte':   [{id:'cafe',qty:20},{id:'leche',qty:200},{id:'vasos-frio',qty:1},{id:'tapas-frio',qty:1}],
+  'Frappé':       [{id:'cafe',qty:20},{id:'leche',qty:150},{id:'vasos-frio',qty:1},{id:'tapas-frio',qty:1}],
+  // Snacks
   'Hot Dog Extralargo':[{id:'pan',qty:1},{id:'salchicha',qty:1}],
-  'Hot Dog Chiquito':[{id:'pan',qty:1},{id:'salchicha',qty:1}],
-  'Bolsa de Café':[{id:'cafe',qty:250}],
+  'Hot Dog Chiquito':  [{id:'pan',qty:0.5},{id:'salchicha-chica',qty:1}],
+  'Bolsa de Café':     [{id:'cafe',qty:250}],
+  'Tucumana':[],
+  // Combos
   'Combo Hot Dog + Americano':[{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1},{id:'pan',qty:1},{id:'salchicha',qty:1}],
-  'Combo Café + Tucumana':[{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
-  'Tucumana':[],'Tucumana Rematada':[],
+  'Combo Café + Tucumana':   [{id:'cafe',qty:20},{id:'vasos',qty:1},{id:'tapas',qty:1}],
 };
 const MOV_COLORS={sale:'#c84040',restock:'#3a8840',adjustment:'#c8a84b',waste:'#c87820',damage:'#c84040',opening:'#3a8840',closing:'#c8a84b'};
 const CAT_ICONS={cafe:'☕',hotdog:'🌭',food:'🫔',bag:'🛍️',mate:'🧉',combo:'⚡'};
@@ -766,7 +782,20 @@ function loadAll(){
   products=products.filter(p=>!p.locales||p.locales.includes(currentLoc));
   sales=ls(SALES_KEY(currentLoc),[]);
   migrateSales();
-  inventory=ls(INV_KEY(currentLoc),DEFAULT_INVENTORY.map(i=>({...i})));
+  const rawInv=ls(INV_KEY(currentLoc),null);
+  const defaultInv=DEFAULT_INVENTORY
+    .filter(i=>!i.locales||i.locales.includes(currentLoc))
+    .map(i=>({...i}));
+  if(rawInv){
+    // Merge saved with defaults — add new items, keep existing stock values
+    const mergedInv=defaultInv.map(def=>{
+      const saved=rawInv.find(s=>s.id===def.id);
+      return saved?{...def,...saved,id:def.id}:def;
+    });
+    inventory=mergedInv;
+  } else {
+    inventory=defaultInv;
+  }
   recipes=ls(RECIPES_KEY,{...DEFAULT_RECIPES});
   movements=ls(MOV_KEY(currentLoc),[]);
   const tk=new Date().toISOString().slice(0,10);
@@ -819,8 +848,10 @@ function selectLocation(id){
   document.getElementById('add-box').style.display='none';
   document.getElementById('prod-hint').style.display='none';
   document.getElementById('reset-lnk').style.display='none';
-  // Show calibration first — mandatory before app
-  openCalib();
+  // Go directly to app — calibration only required after reset
+  showScr('scr-app');showNav();
+  document.getElementById('nav-app').classList.add('on');
+  updateTotals();updateTabCounts();initTutorial();
 }
 
 // ━━━ MENU ━━━
@@ -860,7 +891,7 @@ function normalizeProduct(p){
   const name=aliases[p.name]||p.name;
   const d=DEFAULT_PRODUCTS.find(d=>d.name===name)||{};
   const mappedImg=PRODUCT_IMAGES[name]||d.imagePath||'';
-  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada|expreso|chocolate|tucumana|hot-dog-extralargo|mate|iced-latte|americano-frio|frappe)\.png$/.test(p.imagePath||'')||p.imagePath==='products/espresso.jpg'||p.imagePath==='products/chocolatada.jpg'||p.imagePath==='products/Hot Dog Extralargo.png'||p.imagePath==='products/Tucumana.png';
+  const legacyImg=/^products\/(americano|latte|cappuccino|mocaccino|espresso|chocolatada|expreso|chocolate|tucumana|hot-dog-extralargo|hot-dog-chiquito|bolsa-de-cafe|combo-hot-dog-americano|combo-cafe-tucumana|mate|iced-latte|americano-frio|frappe)\.png$/.test(p.imagePath||'')||p.imagePath==='products/espresso.jpg'||p.imagePath==='products/chocolatada.jpg'||p.imagePath==='products/Hot Dog Extralargo.png'||p.imagePath==='products/Tucumana.png'||p.imagePath==='products/Bolsa de Café.png'||p.imagePath==='products/Americano Frío.png'||p.imagePath==='products/Combo Café + Tucumana.png'||p.imagePath==='products/Combo Hot Dog + Americano.png'||p.imagePath==='products/Hot Dog Chiquito.png'||p.imagePath==='products/Iced Latte.png'||p.imagePath==='products/Frappe.png'||p.imagePath==='products/Mate.png';
   return{...d,...p,name,id:p.id||d.id||slugify(name),group:p.group||d.group||'hot',cat:p.cat||d.cat||'cafe',imagePath:(!p.imagePath||legacyImg||mappedImg)?mappedImg:p.imagePath};
 }
 function mergeDefaultProducts(saved){
@@ -1162,9 +1193,8 @@ function openAdjModal(id){
   adjItemId=id;const item=inventory.find(i=>i.id===id);
   document.getElementById('adj-title').textContent='Ajuste — '+item.name;
   document.getElementById('adj-qty').value='';document.getElementById('adj-reason').value='';document.getElementById('adj-type').value='restock';
-  const isMilk=item.sachetMode;
-  document.getElementById('adj-qty-f').style.display=isMilk?'none':'block';
-  document.getElementById('adj-sach-f').style.display=isMilk?'block':'none';
+  document.getElementById('adj-qty-f').style.display='block';
+  document.getElementById('adj-sach-f').style.display='none';
   document.getElementById('adj-qty-lbl').textContent='Cantidad ('+item.unit+')';
   document.getElementById('adj-modal-bg').classList.add('on');
 }
@@ -1172,7 +1202,7 @@ function closeAdjModal(){document.getElementById('adj-modal-bg').classList.remov
 function saveAdj(){
   if(!adjItemId)return;const item=inventory.find(i=>i.id===adjItemId);
   const type=document.getElementById('adj-type').value,reason=document.getElementById('adj-reason').value.trim();
-  let qty=item.sachetMode?(parseInt(document.getElementById('adj-sach').value)||0)*item.sachetMl:(parseFloat(document.getElementById('adj-qty').value)||0);
+  let qty=parseFloat(document.getElementById('adj-qty').value)||0;
   if(qty<=0)return;
   const prev=item.stock;let delta;
   if(type==='restock'){delta=qty;item.stock+=qty;}
@@ -1184,22 +1214,22 @@ function saveAdj(){
 function handleSessionAction(){if(!session)openAperturaModal();else if(session.status==='open')openCierreModal();else showCierreReport();}
 function openAperturaModal(){
   let h='<p style="font-size:11px;color:var(--cream3);margin-bottom:1rem;line-height:1.6">Revisá el stock y corregí si hace falta.</p>';
-  inventory.forEach(item=>{const isMilk=item.sachetMode,val=isMilk?(item.stock/item.sachetMl).toFixed(0):item.stock;h+='<div class="mfld"><div class="mfld-lbl">'+item.name+(isMilk?' — sachets':' — '+item.unit)+'</div><input type="number" id="open_'+item.id+'" min="0" step="'+(isMilk?1:.1)+'" value="'+val+'"/></div>';});
+  inventory.forEach(item=>{const val=item.stock;h+='<div class="mfld"><div class="mfld-lbl">'+item.name+' — '+item.unit+'</div><input type="number" id="open_'+item.id+'" min="0" step="0.5" value="'+val+'"/></div>';});
   document.getElementById('open-fields').innerHTML=h;document.getElementById('open-modal-bg').classList.add('on');
 }
 function confirmApertura(){
   const opening={};
-  inventory.forEach(item=>{const isMilk=item.sachetMode,val=parseFloat(document.getElementById('open_'+item.id).value)||0,qty=isMilk?val*item.sachetMl:val,prev=item.stock;item.stock=qty;opening[item.id]=qty;addMovement('opening',item.id,qty-prev,prev,qty,'Apertura del día');});
+  inventory.forEach(item=>{const val=parseFloat(document.getElementById('open_'+item.id).value)||0,prev=item.stock;item.stock=val;opening[item.id]=val;addMovement('opening',item.id,val-prev,prev,val,'Apertura del día');});
   saveI();session={status:'open',openedAt:Date.now(),opening};saveSess();document.getElementById('open-modal-bg').classList.remove('on');renderInventory();
 }
 function openCierreModal(){
   let h='';
-  inventory.forEach(item=>{const isMilk=item.sachetMode,th=item.stock,dt=isMilk?(th/item.sachetMl).toFixed(1)+' sachets':th+' '+item.unit;h+='<div class="mfld"><div class="mfld-lbl">'+item.name+' — Teórico: '+dt+'</div><input type="number" id="close_'+item.id+'" min="0" step="'+(isMilk?1:.1)+'" placeholder="'+(isMilk?'Sachets reales':'Cantidad real')+'"/></div>';});
+  inventory.forEach(item=>{const th=item.stock;h+='<div class="mfld"><div class="mfld-lbl">'+item.name+' — Teórico: '+th+' '+item.unit+'</div><input type="number" id="close_'+item.id+'" min="0" step="0.5" placeholder="Cantidad real"/></div>';});
   document.getElementById('close-fields').innerHTML=h;document.getElementById('close-modal-bg').classList.add('on');
 }
 function confirmCierre(){
   const closing={};
-  inventory.forEach(item=>{const isMilk=item.sachetMode,val=parseFloat(document.getElementById('close_'+item.id).value)||0,rq=isMilk?val*item.sachetMl:val,th=item.stock,diff=rq-th;closing[item.id]={real:rq,theoretical:th,diff};addMovement('closing',item.id,diff,th,rq,'Cierre del día');item.stock=rq;});
+  inventory.forEach(item=>{const val=parseFloat(document.getElementById('close_'+item.id).value)||0,th=item.stock,diff=val-th;closing[item.id]={real:val,theoretical:th,diff};addMovement('closing',item.id,diff,th,val,'Cierre del día');item.stock=val;});
   saveI();session={...session,status:'closed',closedAt:Date.now(),closing};saveSess();document.getElementById('close-modal-bg').classList.remove('on');renderInventory();showCierreReport();
 }
 function showCierreReport(){

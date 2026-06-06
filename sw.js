@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v12';
+const CACHE = 'arcafe-v13';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -10,17 +10,21 @@ const FILES = [
   './img-hot.png',
   './img-snack.png',
   './products/americano.jpg',
+  './products/americano-frio.jpg',
+  './products/bolsa-de-cafe.jpg',
   './products/cappuccino.jpg',
   './products/chocolate.jpg',
+  './products/combo-cafe-tucumana.jpg',
+  './products/combo-hot-dog-americano.jpg',
   './products/expreso.jpg',
+  './products/frappe.jpg',
+  './products/hot-dog-chiquito.jpg',
   './products/hot-dog-extralargo.jpg',
-  './products/latte.jpg',
-  './products/mocaccino.jpg',
-  './products/tucumana.jpg',
-  './products/mate.jpg',
   './products/iced-latte.jpg',
-  './products/americano-frio.jpg',
-  './products/frappe.jpg'
+  './products/latte.jpg',
+  './products/mate.jpg',
+  './products/mocaccino.jpg',
+  './products/tucumana.jpg'
 ];
 
 // Install: cache all files fresh
