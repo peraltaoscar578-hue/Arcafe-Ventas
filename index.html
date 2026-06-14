@@ -772,17 +772,220 @@ let reportData={},currentInvTab='stock',currentGroup=null;
 let pinBuffer='',pendingChangeIdx=null,holdTimer=null;
 
 // ━━━ STORAGE ━━━
-const ls=(k,d)=>{try{const s=localStorage.getItem(k);if(s)return JSON.parse(s);}catch(e){}return d;};
-const ss=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// PASO 2 — IndexedDB layer
+// La app escribe en IDB primero; localStorage queda como fallback
+// de solo lectura hasta que la migración inicial finalice.
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+const IDB_NAME    = 'arcafe-db';
+const IDB_VERSION = 1;
+const IDB_STORES  = ['products','sales','inventory','recipes',
+                     'movements','sessions','metadata'];
+
+let _idb = null;         // IDBDatabase instance, null until ready
+let _idbReady = false;   // true once DB is open and migrated
+let _idbReadyCallbacks = [];
+
+function onIdbReady(fn){ _idbReady ? fn() : _idbReadyCallbacks.push(fn); }
+function _resolveIdb(){ _idbReady=true; _idbReadyCallbacks.forEach(f=>f()); _idbReadyCallbacks=[]; }
+
+// Open (or create) the IndexedDB database
+function openIDB(){
+  return new Promise((resolve, reject)=>{
+    if(_idb){ resolve(_idb); return; }
+    const req = indexedDB.open(IDB_NAME, IDB_VERSION);
+    req.onupgradeneeded = e => {
+      const db = e.target.result;
+      IDB_STORES.forEach(name=>{
+        if(!db.objectStoreNames.contains(name)){
+          db.createObjectStore(name);
+        }
+      });
+    };
+    req.onsuccess = e => { _idb = e.target.result; resolve(_idb); };
+    req.onerror   = e => { console.error('[IDB] open error', e.target.error); reject(e.target.error); };
+  });
+}
+
+// Generic IDB get / set / remove — all async, all Promise-based
+function idbGet(store, key){
+  return openIDB().then(db => new Promise((res,rej)=>{
+    const tx  = db.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess = ()=> res(req.result);
+    req.onerror   = ()=> rej(req.error);
+  }));
+}
+function idbSet(store, key, value){
+  return openIDB().then(db => new Promise((res,rej)=>{
+    const tx  = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(value, key);
+    req.onsuccess = ()=> res(true);
+    req.onerror   = ()=> rej(req.error);
+  }));
+}
+function idbRemove(store, key){
+  return openIDB().then(db => new Promise((res,rej)=>{
+    const tx  = db.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess = ()=> res(true);
+    req.onerror   = ()=> rej(req.error);
+  }));
+}
+function idbGetAll(store){
+  return openIDB().then(db => new Promise((res,rej)=>{
+    const tx   = db.transaction(store,'readonly');
+    const keys = tx.objectStore(store).getAllKeys();
+    keys.onsuccess = ()=>{
+      const vals = tx.objectStore(store).getAll();
+      vals.onsuccess = ()=>{
+        const map = {};
+        keys.result.forEach((k,i)=>{ map[k]=vals.result[i]; });
+        res(map);
+      };
+      vals.onerror = ()=> rej(vals.error);
+    };
+    keys.onerror = ()=> rej(keys.error);
+  }));
+}
+
+// ── ONE-TIME MIGRATION: localStorage → IndexedDB ──────────────────────────
+// Runs once per device. Marks completion in IDB metadata store.
+// After migration, localStorage is no longer written to.
+async function migrateLocalStorageToIDB(){
+  const done = await idbGet('metadata','ls_migration_done');
+  if(done === true){ _resolveIdb(); return; }
+
+  console.log('[IDB] Starting localStorage → IndexedDB migration…');
+  const lsKeys = [
+    PROD_KEY,
+    ...['aeropuerto','teleferico'].flatMap(loc=>[
+      SALES_KEY(loc), INV_KEY(loc), MOV_KEY(loc), SESSION_KEY(loc)
+    ]),
+    RECIPES_KEY,
+    'arcafe_tutorial_seen'
+  ];
+
+  const promises = lsKeys.map(key=>{
+    try {
+      const raw = localStorage.getItem(key);
+      if(raw === null) return Promise.resolve();
+      // Determine store from key name
+      let store = 'metadata';
+      if(key === PROD_KEY)                          store = 'products';
+      else if(key.startsWith('arcafe_sales'))       store = 'sales';
+      else if(key.startsWith('arcafe_inventory_v')) store = 'inventory';
+      else if(key.startsWith('arcafe_recipes'))     store = 'recipes';
+      else if(key.startsWith('arcafe_inventory_m')) store = 'movements';
+      else if(key.startsWith('arcafe_daily'))       store = 'sessions';
+      else if(key === 'arcafe_tutorial_seen')       store = 'metadata';
+      // Parse and write to IDB
+      let val;
+      try { val = JSON.parse(raw); } catch(e){ val = raw; }
+      return idbSet(store, key, val);
+    } catch(e){
+      console.warn('[IDB] migration skip', key, e);
+      return Promise.resolve();
+    }
+  });
+
+  await Promise.all(promises);
+  await idbSet('metadata','ls_migration_done', true);
+  console.log('[IDB] Migration complete ✓');
+  _resolveIdb();
+}
+
+// ── SYNC HELPERS: get/set that work IDB-first, fallback to localStorage ───
+// These replace the old ls() / ss() helpers.
+// Reads:  IDB if ready, else localStorage
+// Writes: IDB (fire-and-forget) + localStorage while migration pending
+function storageGetSync(key, def){
+  // Sync read — from localStorage (available immediately)
+  // IDB async reads are handled separately in loadAll
+  try {
+    const s = localStorage.getItem(key);
+    if(s !== null) return JSON.parse(s);
+  } catch(e){}
+  return def;
+}
+function storageSaveAsync(store, key, value){
+  // Write to IDB (primary) + localStorage (fallback until IDB confirmed)
+  idbSet(store, key, value).catch(e=> console.warn('[IDB] write error', key, e));
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch(e){}
+}
+function storageRemoveAsync(store, key){
+  idbRemove(store, key).catch(e=> console.warn('[IDB] remove error', key, e));
+  try { localStorage.removeItem(key); } catch(e){}
+}
+
+// ─── Bootstrap: open IDB and run migration as soon as possible ───────────
+openIDB().then(()=> migrateLocalStorageToIDB()).catch(e=>{
+  console.warn('[IDB] Failed to open, will use localStorage only', e);
+  _resolveIdb(); // still resolve so app doesn't block
+});
+
+STORAGE_KEYS={
+  products:PROD_KEY,
+  sales:id=>SALES_KEY(id),
+  inventory:id=>INV_KEY(id),
+  recipes:RECIPES_KEY,
+  movements:id=>MOV_KEY(id),
+  sessions:id=>SESSION_KEY(id),
+  tutorial:'arcafe_tutorial_seen'
+};
+const storage={
+  // ── Sync reads (still from localStorage until IDB async reads are wired in loadAll) ──
+  get(key,def){
+    try{const s=localStorage.getItem(key);if(s!==null)return JSON.parse(s);}catch(e){}
+    return def;
+  },
+  getRaw(key){try{return localStorage.getItem(key);}catch(e){return null;}},
+
+  // ── Writes: IDB-first + localStorage mirror ──
+  set(key,value,idbStore='metadata'){
+    storageSaveAsync(idbStore, key, value);
+    return true;
+  },
+  setRaw(key,value){
+    idbSet('metadata',key,value).catch(()=>{});
+    try{localStorage.setItem(key,value);return true;}catch(e){return false;}
+  },
+  remove(key,idbStore='metadata'){
+    storageRemoveAsync(idbStore,key);
+    return true;
+  },
+
+  // ── Domain methods — each knows its IDB store ──
+  getProducts(){return this.get(STORAGE_KEYS.products,null);},
+  saveProducts(value){return this.set(STORAGE_KEYS.products,value,'products');},
+
+  getSales(locationId){return this.get(STORAGE_KEYS.sales(locationId),[]);},
+  saveSales(locationId,value){return this.set(STORAGE_KEYS.sales(locationId),value,'sales');},
+
+  getInventory(locationId){return this.get(STORAGE_KEYS.inventory(locationId),null);},
+  saveInventory(locationId,value){return this.set(STORAGE_KEYS.inventory(locationId),value,'inventory');},
+
+  getRecipes(){return this.get(STORAGE_KEYS.recipes,{...DEFAULT_RECIPES});},
+  saveRecipes(value){return this.set(STORAGE_KEYS.recipes,value,'recipes');},
+
+  getMovements(locationId){return this.get(STORAGE_KEYS.movements(locationId),[]);},
+  saveMovements(locationId,value){return this.set(STORAGE_KEYS.movements(locationId),value,'movements');},
+
+  getSessions(locationId){return this.get(STORAGE_KEYS.sessions(locationId),{});},
+  saveSessions(locationId,value){return this.set(STORAGE_KEYS.sessions(locationId),value,'sessions');},
+
+  hasSeenTutorial(){return this.getRaw(STORAGE_KEYS.tutorial)==='1';},
+  markTutorialSeen(){return this.setRaw(STORAGE_KEYS.tutorial,'1');}
+};
 function loadAll(){
-  const raw=ls(PROD_KEY,null);
+  const raw=storage.getProducts();
   if(raw){products=mergeDefaultProducts(raw);}
   else products=DEFAULT_PRODUCTS.map(p=>({...p}));
   // Filter products by locale restriction
   products=products.filter(p=>!p.locales||p.locales.includes(currentLoc));
-  sales=ls(SALES_KEY(currentLoc),[]);
+  sales=storage.getSales(currentLoc);
   migrateSales();
-  const rawInv=ls(INV_KEY(currentLoc),null);
+  const rawInv=storage.getInventory(currentLoc);
   const defaultInv=DEFAULT_INVENTORY
     .filter(i=>!i.locales||i.locales.includes(currentLoc))
     .map(i=>({...i}));
@@ -796,20 +999,20 @@ function loadAll(){
   } else {
     inventory=defaultInv;
   }
-  recipes=ls(RECIPES_KEY,{...DEFAULT_RECIPES});
-  movements=ls(MOV_KEY(currentLoc),[]);
+  recipes=storage.getRecipes();
+  movements=storage.getMovements(currentLoc);
   const tk=new Date().toISOString().slice(0,10);
-  session=(ls(SESSION_KEY(currentLoc),{}))[tk]||null;
+  session=(storage.getSessions(currentLoc))[tk]||null;
 }
-const saveP=()=>ss(PROD_KEY,products);
-const saveS=()=>ss(SALES_KEY(currentLoc),sales);
-const saveI=()=>ss(INV_KEY(currentLoc),inventory);
-const saveM=()=>ss(MOV_KEY(currentLoc),movements);
-function saveSess(){const tk=new Date().toISOString().slice(0,10);const s=ls(SESSION_KEY(currentLoc),{});s[tk]=session;ss(SESSION_KEY(currentLoc),s);}
+const saveP=()=>storage.saveProducts(products);
+const saveS=()=>storage.saveSales(currentLoc,sales);
+const saveI=()=>storage.saveInventory(currentLoc,inventory);
+const saveM=()=>storage.saveMovements(currentLoc,movements);
+function saveSess(){const tk=new Date().toISOString().slice(0,10);const s=storage.getSessions(currentLoc);s[tk]=session;storage.saveSessions(currentLoc,s);}
 
 // ━━━ SPLASH ━━━
 window.addEventListener('load',()=>{
-  try{const raw=localStorage.getItem(PROD_KEY);if(raw){const p=JSON.parse(raw);const normalized=mergeDefaultProducts(p);if(JSON.stringify(normalized)!==JSON.stringify(p))localStorage.setItem(PROD_KEY,JSON.stringify(normalized));}}catch(e){}
+  try{const p=storage.getProducts();if(p){const normalized=mergeDefaultProducts(p);if(JSON.stringify(normalized)!==JSON.stringify(p))storage.saveProducts(normalized);}}catch(e){}
   setTimeout(()=>{document.getElementById('splash').classList.add('out');setTimeout(()=>{document.getElementById('splash').style.display='none';initPin();},500);},2000);
 });
 
@@ -1437,8 +1640,8 @@ function confirmCalib(){
 }
 
 // ━━━ TUTORIAL ━━━
-function initTutorial(){const seen=localStorage.getItem('arcafe_tutorial_seen');if(!seen)document.getElementById('tut-bg').classList.add('on');}
-function closeTutorial(){localStorage.setItem('arcafe_tutorial_seen','1');document.getElementById('tut-bg').classList.remove('on');}
+function initTutorial(){if(!storage.hasSeenTutorial())document.getElementById('tut-bg').classList.add('on');}
+function closeTutorial(){storage.markTutorialSeen();document.getElementById('tut-bg').classList.remove('on');}
 
 // ━━━ EVENTS ━━━
 document.getElementById('new-name').addEventListener('keydown',e=>{if(e.key==='Enter')document.getElementById('new-price').focus();});
