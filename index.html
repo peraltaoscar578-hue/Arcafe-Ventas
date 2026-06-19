@@ -774,6 +774,145 @@ let products=[],sales=[],inventory=[],recipes={},movements=[],session=null;
 let reportData={},currentInvTab='stock',currentGroup=null;
 let pinBuffer='',pendingChangeIdx=null,holdTimer=null;
 
+// ━━━ SUPABASE ━━━
+const SUPABASE_URL  = 'https://zjmvcbkkjetqrwbabepj.supabase.co';
+const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpqbXZjYmtramV0cXJ3YmFiZXBqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2Mzc1NzgsImV4cCI6MjA5NzIxMzU3OH0.WBY4Uwry_GJj1nTPZBaTsacDrow3uyatlEhR_YKYmuo';
+const DEVICE_ID     = (()=>{
+  let id = localStorage.getItem('arcafe_device_id');
+  if(!id){ id = 'dev_' + Math.random().toString(36).slice(2,10); localStorage.setItem('arcafe_device_id', id); }
+  return id;
+})();
+
+// ── Generic Supabase REST helper ──────────────────────────────────────────
+async function sbRequest(method, table, body=null, params=''){
+  const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
+  const headers = {
+    'Content-Type':  'application/json',
+    'apikey':        SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Prefer':        method==='POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+  };
+  const opts = { method, headers };
+  if(body) opts.body = JSON.stringify(body);
+  const res = await fetch(url, opts);
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error(`[SB] ${method} ${table} ${res.status}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// ── Sync queue in IDB ─────────────────────────────────────────────────────
+// Each local write enqueues an event. sync() drains the queue when online.
+async function enqueue(entity, operation, payload){
+  const event = {
+    id:        crypto.randomUUID(),
+    entity,
+    operation,
+    payload,
+    createdAt: new Date().toISOString(),
+    attempts:  0,
+    lastError: null
+  };
+  const queue = await idbGet('metadata','sync_queue') || [];
+  queue.push(event);
+  await idbSet('metadata','sync_queue', queue);
+}
+
+async function sync(){
+  if(!navigator.onLine) return;
+  const queue = await idbGet('metadata','sync_queue') || [];
+  if(!queue.length) return;
+
+  const remaining = [];
+  for(const event of queue){
+    try {
+      await processSyncEvent(event);
+    } catch(e){
+      event.attempts  = (event.attempts||0) + 1;
+      event.lastError = e.message;
+      if(event.attempts < 5) remaining.push(event);
+      else console.warn('[SB] Dropping event after 5 attempts:', event.id, e.message);
+    }
+  }
+  await idbSet('metadata','sync_queue', remaining);
+  if(remaining.length === 0) console.log('[SB] Sync complete ✓');
+}
+
+async function processSyncEvent(event){
+  const { entity, operation, payload } = event;
+  if(entity === 'sale'){
+    await sbRequest('POST', 'sales', payload);
+  } else if(entity === 'inventory_movement'){
+    await sbRequest('POST', 'inventory_movements', payload);
+  } else if(entity === 'inventory_stock'){
+    await sbRequest('POST', 'inventory_stock', [payload], '?on_conflict=location_id,item_id');
+  } else if(entity === 'daily_session'){
+    await sbRequest('POST', 'daily_sessions', payload, '?on_conflict=location_id,date');
+  }
+}
+
+// ── Sync triggers ─────────────────────────────────────────────────────────
+window.addEventListener('online', ()=>{ console.log('[SB] Back online — syncing…'); sync(); });
+// Sync on load if online
+window.addEventListener('load', ()=>{ if(navigator.onLine) setTimeout(sync, 3000); });
+
+// ── Public helpers called from app logic ──────────────────────────────────
+function syncSale(sale){
+  enqueue('sale','insert',{
+    local_id:         sale.id || crypto.randomUUID(),
+    location_id:      currentLoc,
+    device_id:        DEVICE_ID,
+    product_name:     sale.name,
+    price:            sale.price,
+    pricing:          sale.pricing || null,
+    takeaway:         sale.takeaway !== false,
+    grams:            sale.grams   || 0,
+    local_created_at: new Date(sale.ts || Date.now()).toISOString()
+  });
+  if(navigator.onLine) sync();
+}
+
+function syncInventoryMovement(mov){
+  enqueue('inventory_movement','insert',{
+    location_id:      mov.location || currentLoc,
+    item_id:          mov.itemId,
+    item_name:        mov.itemName,
+    type:             mov.type,
+    quantity:         mov.quantity,
+    previous_stock:   mov.previousStock,
+    new_stock:        mov.newStock,
+    reason:           mov.reason || '',
+    local_created_at: new Date(mov.timestamp || Date.now()).toISOString()
+  });
+  if(navigator.onLine) sync();
+}
+
+function syncInventoryStock(item){
+  enqueue('inventory_stock','upsert',{
+    location_id: currentLoc,
+    item_id:     item.id,
+    item_name:   item.name,
+    stock:       item.stock,
+    updated_at:  new Date().toISOString()
+  });
+  if(navigator.onLine) sync();
+}
+
+function syncSession(session, date){
+  enqueue('daily_session','upsert',{
+    location_id: currentLoc,
+    date:        date,
+    status:      session.status,
+    opened_at:   session.openedAt  ? new Date(session.openedAt).toISOString()  : null,
+    closed_at:   session.closedAt  ? new Date(session.closedAt).toISOString()  : null,
+    opening:     session.opening   || null,
+    closing:     session.closing   || null
+  });
+  if(navigator.onLine) sync();
+}
+
 // ━━━ STORAGE ━━━
 // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 // PASO 2 — IndexedDB layer
@@ -1009,9 +1148,19 @@ function loadAll(){
 }
 const saveP=()=>storage.saveProducts(products);
 const saveS=()=>storage.saveSales(currentLoc,sales);
-const saveI=()=>storage.saveInventory(currentLoc,inventory);
+const saveI=()=>{
+  storage.saveInventory(currentLoc,inventory);
+  // Sync each item stock to Supabase
+  if(inventory && currentLoc) inventory.forEach(item=>syncInventoryStock(item));
+};
 const saveM=()=>storage.saveMovements(currentLoc,movements);
-function saveSess(){const tk=new Date().toISOString().slice(0,10);const s=storage.getSessions(currentLoc);s[tk]=session;storage.saveSessions(currentLoc,s);}
+function saveSess(){
+  const tk=new Date().toISOString().slice(0,10);
+  const s=storage.getSessions(currentLoc);
+  s[tk]=session;
+  storage.saveSessions(currentLoc,s);
+  if(session) syncSession(session, tk);
+}
 
 // ━━━ SPLASH ━━━
 window.addEventListener('load',()=>{
@@ -1170,8 +1319,10 @@ function getGramsForProduct(p){
 const stockClass=item=>item.stock<=0?'critical':item.stock<item.minStock?'warn':'ok';
 function addMovement(type,itemId,delta,prev,next,reason){
   const item=inventory.find(i=>i.id===itemId);
-  movements.push({id:Date.now()+'_'+Math.random().toString(36).slice(2),type,itemId,itemName:item?item.name:itemId,quantity:delta,previousStock:prev,newStock:next,reason:reason||'',timestamp:Date.now(),location:currentLoc});
+  const mov={id:Date.now()+'_'+Math.random().toString(36).slice(2),type,itemId,itemName:item?item.name:itemId,quantity:delta,previousStock:prev,newStock:next,reason:reason||'',timestamp:Date.now(),location:currentLoc};
+  movements.push(mov);
   saveM();
+  syncInventoryMovement(mov);
 }
 
 // ━━━ GROUP TABS ━━━
@@ -1293,7 +1444,10 @@ function cancelDin(){document.getElementById('din-bg').classList.remove('on');pe
 function applyChange(i,delta,tw){
   const name=products[i].name;
   if(delta>0){
-    sales.push(createSale(name,tw));
+    const saleRecord = createSale(name,tw);
+    saleRecord.id = saleRecord.id || crypto.randomUUID();
+    sales.push(saleRecord);
+    syncSale(saleRecord);
     const recipe=recipes[name]||[];
     const prod=products.find(p=>p.name===name);
     recipe.forEach(({id,qty})=>{
