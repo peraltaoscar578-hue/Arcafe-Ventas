@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v15';
+const CACHE = 'arcafe-v16';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -16,13 +16,23 @@ const FILES = [
   './products/hot-dog-extralargo.jpg',
   './products/latte.jpg',
   './products/mocaccino.jpg',
-  './products/tucumana.jpg'
+  './products/tucumana.jpg',
+  './products/mate.jpg',
+  './products/iced-latte.jpg',
+  './products/americano-frio.jpg',
+  './products/frappe.jpg'
 ];
 
-// Install: cache all files fresh
+// Install: cache all files, but don't let one missing file break the whole cache
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(cache => cache.addAll(FILES))
+    caches.open(CACHE).then(cache =>
+      Promise.all(
+        FILES.map(url =>
+          cache.add(url).catch(err => console.warn('[SW] skip', url, err.message))
+        )
+      )
+    )
   );
   self.skipWaiting();
 });
