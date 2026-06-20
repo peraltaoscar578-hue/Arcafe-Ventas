@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v17';
+const CACHE = 'arcafe-v18';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -47,8 +47,13 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// Fetch: network first, fallback to cache
+// Fetch: network first, fallback to cache — GET requests only.
+// POST/PUT/PATCH/DELETE (e.g. Supabase sync calls) pass straight through;
+// the Cache API can only store GET responses, and intercepting non-GET
+// requests here was silently breaking the Supabase sync chain.
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET') return; // let it go to network untouched
+
   e.respondWith(
     fetch(e.request)
       .then(res => {
