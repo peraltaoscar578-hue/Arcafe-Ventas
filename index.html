@@ -823,7 +823,8 @@ async function enqueue(entity, operation, payload){
 async function sync(){
   if(!navigator.onLine) return;
   const queue = await idbGet('metadata','sync_queue') || [];
-  if(!queue.length) return;
+  if(!queue.length){ console.log('[SB] Sync: queue empty'); return; }
+  console.log('[SB] Syncing', queue.length, 'event(s)…');
 
   const remaining = [];
   for(const event of queue){
@@ -859,8 +860,8 @@ window.addEventListener('online', ()=>{ console.log('[SB] Back online — syncin
 window.addEventListener('load', ()=>{ if(navigator.onLine) setTimeout(sync, 3000); });
 
 // ── Public helpers called from app logic ──────────────────────────────────
-function syncSale(sale){
-  enqueue('sale','insert',{
+async function syncSale(sale){
+  await enqueue('sale','insert',{
     local_id:         sale.id || crypto.randomUUID(),
     location_id:      currentLoc,
     device_id:        DEVICE_ID,
@@ -871,11 +872,12 @@ function syncSale(sale){
     grams:            sale.grams   || 0,
     local_created_at: new Date(sale.ts || Date.now()).toISOString()
   });
+  console.log('[SB] Sale enqueued:', sale.name);
   if(navigator.onLine) sync();
 }
 
-function syncInventoryMovement(mov){
-  enqueue('inventory_movement','insert',{
+async function syncInventoryMovement(mov){
+  await enqueue('inventory_movement','insert',{
     location_id:      mov.location || currentLoc,
     item_id:          mov.itemId,
     item_name:        mov.itemName,
@@ -889,8 +891,8 @@ function syncInventoryMovement(mov){
   if(navigator.onLine) sync();
 }
 
-function syncInventoryStock(item){
-  enqueue('inventory_stock','upsert',{
+async function syncInventoryStock(item){
+  await enqueue('inventory_stock','upsert',{
     location_id: currentLoc,
     item_id:     item.id,
     item_name:   item.name,
@@ -900,8 +902,8 @@ function syncInventoryStock(item){
   if(navigator.onLine) sync();
 }
 
-function syncSession(session, date){
-  enqueue('daily_session','upsert',{
+async function syncSession(session, date){
+  await enqueue('daily_session','upsert',{
     location_id: currentLoc,
     date:        date,
     status:      session.status,
