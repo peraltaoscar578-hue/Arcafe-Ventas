@@ -246,7 +246,7 @@ async function loadSession(loc){
 async function loadSalesStats(loc){
   const { start, end } = todayRangeISO();
   try {
-    const sales = await sbGet('sales', `?location_id=eq.${loc}&local_created_at=gte.${start}&local_created_at=lte.${end}&deleted_at=is.null&order=local_created_at.desc&limit=500`);
+    const sales = await sbGet('sales', `?location_id=eq.${loc}&and=(local_created_at.gte.${start},local_created_at.lte.${end})&deleted_at=is.null&order=local_created_at.desc&limit=500`);
 
     const totalBs = sales.reduce((s,r)=> s + (Number(r.price)||0), 0);
     const totalUnits = sales.length;
@@ -320,7 +320,7 @@ async function loadStock(loc){
 async function loadMovements(loc){
   const { start, end } = todayRangeISO();
   try {
-    const rows = await sbGet('inventory_movements', `?location_id=eq.${loc}&local_created_at=gte.${start}&local_created_at=lte.${end}&order=local_created_at.desc&limit=60`);
+    const rows = await sbGet('inventory_movements', `?location_id=eq.${loc}&and=(local_created_at.gte.${start},local_created_at.lte.${end})&order=local_created_at.desc&limit=60`);
     const el = document.getElementById('mov-list');
     if(!rows.length){
       el.innerHTML = `<div class="empty-msg"><b>Sin movimientos hoy</b>Las ventas y ajustes aparecerán aquí</div>`;
