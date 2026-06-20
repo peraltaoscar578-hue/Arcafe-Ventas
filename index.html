@@ -786,11 +786,23 @@ const DEVICE_ID     = (()=>{
 // ── Generic Supabase REST helper ──────────────────────────────────────────
 async function sbRequest(method, table, body=null, params=''){
   const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
+  // resolution=merge-duplicates only makes sense when params includes on_conflict
+  // (inventory_stock, daily_sessions). Plain inserts (sales, inventory_movements)
+  // must NOT send merge-duplicates without on_conflict, or PostgREST silently
+  // no-ops the insert instead of erroring.
+  const isUpsert = params.includes('on_conflict');
+  const preferParts = [];
+  if(method === 'POST'){
+    preferParts.push(isUpsert ? 'resolution=merge-duplicates' : 'resolution=ignore-duplicates');
+    preferParts.push('return=representation');
+  } else {
+    preferParts.push('return=minimal');
+  }
   const headers = {
     'Content-Type':  'application/json',
     'apikey':        SUPABASE_KEY,
     'Authorization': `Bearer ${SUPABASE_KEY}`,
-    'Prefer':        method==='POST' ? 'resolution=merge-duplicates,return=minimal' : 'return=minimal'
+    'Prefer':        preferParts.join(',')
   };
   const opts = { method, headers };
   if(body) opts.body = JSON.stringify(body);
