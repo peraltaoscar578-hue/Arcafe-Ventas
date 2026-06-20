@@ -1493,14 +1493,37 @@ function addProduct(){
 function openModal(i){editingIndex=i;document.getElementById('modal-title').textContent=products[i].name;document.getElementById('modal-price').value=products[i].price||'';document.getElementById('modal-grams').value=products[i].grams||'';document.getElementById('modal-bg').classList.add('on');setTimeout(()=>document.getElementById('modal-price').focus(),100);}
 function saveModal(){if(editingIndex===null)return;products[editingIndex].price=parseFloat(document.getElementById('modal-price').value)||0;products[editingIndex].grams=parseInt(document.getElementById('modal-grams').value)||0;saveP();closeModal();if(currentGroup)renderGroup();}
 function closeModal(){document.getElementById('modal-bg').classList.remove('on');editingIndex=null;}
-function resetAll(){
+async function resetAll(){
   if(!confirm('¿Reiniciar ventas de '+LOCS[currentLoc].name+'? También se reiniciará la calibración del día.'))return;
+  // Void today's sales in Supabase so the dashboard stops counting them
+  await voidTodaySalesRemote();
   sales=[];saveS();
   calibGrams=null;
   render();
   // Show calibration again
   calibFromReset=true;
   openCalib();
+}
+
+// Mark today's synced sales as voided in Supabase (soft delete)
+async function voidTodaySalesRemote(){
+  if(!navigator.onLine) return; // will simply not be counted next time online sync runs cleanup manually
+  try {
+    const today = new Date().toISOString().slice(0,10);
+    const url = `${SUPABASE_URL}/rest/v1/sales?location_id=eq.${currentLoc}&local_created_at=gte.${today}T00:00:00&local_created_at=lte.${today}T23:59:59.999`;
+    await fetch(url, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type':  'application/json',
+        'apikey':        SUPABASE_KEY,
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Prefer':         'return=minimal'
+      },
+      body: JSON.stringify({ deleted_at: new Date().toISOString() })
+    });
+  } catch(e){
+    console.warn('[SB] voidTodaySalesRemote failed', e);
+  }
 }
 
 // ━━━ INVENTORY ━━━

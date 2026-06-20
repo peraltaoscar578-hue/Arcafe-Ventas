@@ -201,9 +201,13 @@ async function sbGet(table, query=''){
 }
 
 function todayRangeISO(){
+  // Build local midnight boundaries, then convert to UTC correctly.
+  // Using setHours+toISOString shifts the day in UTC-4 timezones (Bolivia),
+  // causing yesterday's/today's sales to bleed into the wrong bucket.
   const now = new Date();
-  const start = new Date(now); start.setHours(0,0,0,0);
-  const end   = new Date(now); end.setHours(23,59,59,999);
+  const y = now.getFullYear(), m = now.getMonth(), d = now.getDate();
+  const start = new Date(y, m, d, 0, 0, 0, 0);
+  const end   = new Date(y, m, d, 23, 59, 59, 999);
   return { start: start.toISOString(), end: end.toISOString() };
 }
 
@@ -242,7 +246,7 @@ async function loadSession(loc){
 async function loadSalesStats(loc){
   const { start, end } = todayRangeISO();
   try {
-    const sales = await sbGet('sales', `?location_id=eq.${loc}&local_created_at=gte.${start}&local_created_at=lte.${end}&order=local_created_at.desc&limit=500`);
+    const sales = await sbGet('sales', `?location_id=eq.${loc}&local_created_at=gte.${start}&local_created_at=lte.${end}&deleted_at=is.null&order=local_created_at.desc&limit=500`);
 
     const totalBs = sales.reduce((s,r)=> s + (Number(r.price)||0), 0);
     const totalUnits = sales.length;
