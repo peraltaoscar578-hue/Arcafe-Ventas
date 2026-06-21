@@ -1472,7 +1472,7 @@ function applyChange(i,delta,tw){
       const prev=item.stock;item.stock=Math.max(0,item.stock-actualQty);
       addMovement('sale',id,-actualQty,prev,item.stock,'Venta'+(tw?' (llevar)':' (local)')+': '+name+(id==='cafe'&&calibGrams?' (cal.'+calibGrams+'g)':''));
     });
-    saveI();
+    saveI(recipe.filter(({id})=>tw||(id!=='vasos'&&id!=='tapas')).map(({id})=>id));
   } else {
     const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
     if(idx!==undefined){
@@ -1488,7 +1488,7 @@ function applyChange(i,delta,tw){
         const prev=item.stock;item.stock+=actualQty;
         addMovement('adjustment',id,actualQty,prev,item.stock,'Venta revertida: '+name);
       });
-      saveI();
+      saveI(recipe.filter(({id})=>wasTw||(id!=='vasos'&&id!=='tapas')).map(({id})=>id));
     }
   }
   saveS();updateCardCount(i);
