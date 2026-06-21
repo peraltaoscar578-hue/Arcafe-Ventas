@@ -817,40 +817,66 @@ async function sbRequest(method, table, body=null, params=''){
 
 // ── Sync queue in IDB ─────────────────────────────────────────────────────
 // Each local write enqueues an event. sync() drains the queue when online.
-async function enqueue(entity, operation, payload){
-  const event = {
-    id:        crypto.randomUUID(),
-    entity,
-    operation,
-    payload,
-    createdAt: new Date().toISOString(),
-    attempts:  0,
-    lastError: null
-  };
-  const queue = await idbGet('metadata','sync_queue') || [];
-  queue.push(event);
-  await idbSet('metadata','sync_queue', queue);
+// Serialize all enqueue() calls — concurrent calls were doing a
+// read-modify-write on the same IDB key, so a sale's enqueue could be
+// overwritten by an inventory_stock enqueue running at the same time,
+// silently dropping the sale event before it ever reached the queue.
+let _enqueueChain = Promise.resolve();
+
+function enqueue(entity, operation, payload){
+  _enqueueChain = _enqueueChain.then(async ()=>{
+    const event = {
+      id:        crypto.randomUUID(),
+      entity,
+      operation,
+      payload,
+      createdAt: new Date().toISOString(),
+      attempts:  0,
+      lastError: null
+    };
+    const queue = await idbGet('metadata','sync_queue') || [];
+    queue.push(event);
+    await idbSet('metadata','sync_queue', queue);
+  }).catch(e=> console.warn('[SB] enqueue error', e));
+  return _enqueueChain;
 }
+
+let _syncRunning = false;
+let _syncRequestedAgain = false;
 
 async function sync(){
   if(!navigator.onLine) return;
-  const queue = await idbGet('metadata','sync_queue') || [];
-  if(!queue.length){ console.log('[SB] Sync: queue empty'); return; }
-  console.log('[SB] Syncing', queue.length, 'event(s)…');
+  // Prevent concurrent runs: if one is already in flight, just flag that
+  // another pass is needed once it finishes. Without this lock, multiple
+  // overlapping sync() calls were reading/writing the IDB queue at the same
+  // time — causing the same event to be processed many times while newer
+  // events (like sales) got silently overwritten and lost.
+  if(_syncRunning){ _syncRequestedAgain = true; return; }
+  _syncRunning = true;
+  try {
+    do {
+      _syncRequestedAgain = false;
+      const queue = await idbGet('metadata','sync_queue') || [];
+      if(!queue.length){ console.log('[SB] Sync: queue empty'); break; }
+      console.log('[SB] Syncing', queue.length, 'event(s)…');
 
-  const remaining = [];
-  for(const event of queue){
-    try {
-      await processSyncEvent(event);
-    } catch(e){
-      event.attempts  = (event.attempts||0) + 1;
-      event.lastError = e.message;
-      if(event.attempts < 5) remaining.push(event);
-      else console.warn('[SB] Dropping event after 5 attempts:', event.id, e.message);
-    }
+      const remaining = [];
+      for(const event of queue){
+        try {
+          await processSyncEvent(event);
+        } catch(e){
+          event.attempts  = (event.attempts||0) + 1;
+          event.lastError = e.message;
+          if(event.attempts < 5) remaining.push(event);
+          else console.warn('[SB] Dropping event after 5 attempts:', event.id, e.message);
+        }
+      }
+      await idbSet('metadata','sync_queue', remaining);
+      if(remaining.length === 0) console.log('[SB] Sync complete ✓');
+    } while(_syncRequestedAgain);
+  } finally {
+    _syncRunning = false;
   }
-  await idbSet('metadata','sync_queue', remaining);
-  if(remaining.length === 0) console.log('[SB] Sync complete ✓');
 }
 
 async function processSyncEvent(event){
