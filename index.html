@@ -37,6 +37,20 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 /* SPLASH */
 #splash{position:fixed;inset:0;z-index:999;background:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;transition:opacity .5s}
 #splash.out{opacity:0;pointer-events:none}
+
+/* MODE PICKER — entry screen with hero background */
+#scr-mode{display:none;position:fixed;inset:0;background:#000}
+#scr-mode.on{display:flex}
+.mode-bg{position:absolute;inset:0;background:url('splash-bg.jpg') center 18% / cover no-repeat;filter:brightness(.78)}
+.mode-overlay{position:absolute;inset:0;background:linear-gradient(180deg,rgba(12,10,5,.15) 0%,rgba(12,10,5,.55) 55%,rgba(12,10,5,.96) 100%)}
+.mode-content{position:relative;z-index:2;width:100%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-height:100%;padding:2.5rem 1.5rem calc(3rem + env(safe-area-inset-bottom,0px));text-align:center}
+.mode-tag{font-size:10px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:var(--gold2);margin-bottom:10px;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.mode-title{font-family:'DM Serif Display',serif;font-size:22px;color:var(--cream);letter-spacing:.03em;margin-bottom:28px;text-shadow:0 2px 14px rgba(0,0,0,.7);max-width:300px;line-height:1.35}
+.mode-btn{width:100%;max-width:300px;background:rgba(26,23,16,.78);border:1px solid var(--ga35);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .15s;backdrop-filter:blur(6px)}
+.mode-btn:active{background:rgba(200,168,75,.18);border-color:var(--gold);transform:scale(.98)}
+.mode-ico{width:40px;height:40px;border-radius:10px;background:var(--ga12);border:1px solid var(--ga22);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:18px;color:var(--gold)}
+.mode-name{font-family:'DM Serif Display',serif;font-size:18px;color:var(--cream);text-align:left}
+.mode-sub{font-size:9px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--cream3);margin-top:2px;text-align:left}
 .sp-ring{width:88px;height:88px;border-radius:50%;overflow:hidden;border:1.5px solid var(--ga35);margin-bottom:20px;animation:pulse 2.5s ease-in-out infinite}
 .sp-ring img{width:100%;height:100%;object-fit:cover}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--ga22)}50%{box-shadow:0 0 0 10px transparent}}
@@ -340,6 +354,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
   <div class="sp-name">Arcafé</div>
   <div class="sp-tag">Café al Paso Premium</div>
   <div class="sp-dot"></div>
+</div>
+
+<!-- MODE PICKER — choose Ventas or Dashboard before PIN -->
+<div id="scr-mode" class="on">
+  <div class="mode-bg"></div>
+  <div class="mode-overlay"></div>
+  <div class="mode-content">
+    <div class="mode-tag">Arcafé · Café al Paso Premium</div>
+    <div class="mode-title">¿Qué querés abrir?</div>
+    <button class="mode-btn" onclick="chooseMode('ventas')">
+      <div class="mode-ico">🛒</div>
+      <div><div class="mode-name">Registro de Ventas</div><div class="mode-sub">Punto de venta del local</div></div>
+    </button>
+    <button class="mode-btn" onclick="chooseMode('dashboard')">
+      <div class="mode-ico">📊</div>
+      <div><div class="mode-name">Panel de Supervisión</div><div class="mode-sub">Ver ventas y stock en vivo</div></div>
+    </button>
+  </div>
 </div>
 
 <!-- PIN -->
@@ -681,7 +713,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
 
 <script>
 // ━━━ CONFIG ━━━
-const FIXED_PIN='1809';
+const PIN_VENTAS='1809';
+const PIN_DASHBOARD='2218';
+let appMode=null; // 'ventas' | 'dashboard'
 const LOCS={aeropuerto:{name:'Aeropuerto'},teleferico:{name:'Teleférico Morado'}};
 const PRICES={aeropuerto:{'Americano':15,'Latte':19,'Cappuccino':19,'Café Doble':12,'Mocaccino':22,'Iced Latte':19,'Americano Frío':15,'Hot Dog Extralargo':15,'Tucumana':10,'Combo Hot Dog + Americano':25,'Frappé':22,'Expreso':12,'Chocolate':22,'Bolsa de Café':55},teleferico:{'Expreso':8,'Chocolate':16}};
 const EMP_PRICES={'Americano':13,'Latte':17,'Cappuccino':17,'Café Doble':10,'Mocaccino':20,'Iced Latte':17,'Americano Frío':13,'Hot Dog Extralargo':13,'Tucumana':9,'Bolsa de Café':55,'Frappé':20,'Expreso':10,'Chocolate':17};
@@ -1205,16 +1239,38 @@ function saveSess(){
 // ━━━ SPLASH ━━━
 window.addEventListener('load',()=>{
   try{const p=storage.getProducts();if(p){const normalized=mergeDefaultProducts(p);if(JSON.stringify(normalized)!==JSON.stringify(p))storage.saveProducts(normalized);}}catch(e){}
-  setTimeout(()=>{document.getElementById('splash').classList.add('out');setTimeout(()=>{document.getElementById('splash').style.display='none';initPin();},500);},2000);
+  setTimeout(()=>{document.getElementById('splash').classList.add('out');setTimeout(()=>{document.getElementById('splash').style.display='none';showScr('scr-mode');document.getElementById('scr-mode').classList.add('on');},500);},2000);
 });
+
+function chooseMode(mode){
+  appMode = mode;
+  document.getElementById('scr-mode').classList.remove('on');
+  initPin();
+}
 
 // ━━━ PIN ━━━
 function initPin(){pinBuffer='';updateDots();document.getElementById('pin-err').textContent='';showScr('scr-pin');hideNav();}
 function pinPress(d){if(pinBuffer.length>=4)return;pinBuffer+=d;updateDots();if(pinBuffer.length===4)setTimeout(checkPin,150);}
 function pinDel(){pinBuffer=pinBuffer.slice(0,-1);updateDots();document.getElementById('pin-err').textContent='';}
 function updateDots(){for(let i=0;i<4;i++)document.getElementById('pd'+i).classList.toggle('on',i<pinBuffer.length);}
-function checkPin(){if(pinBuffer===FIXED_PIN){showScr('scr-pick');hideNav();}else{document.getElementById('pin-err').textContent='PIN incorrecto, intentá de nuevo';pinBuffer='';updateDots();}}
-function lockApp(){currentLoc=null;employeeMode=false;initPin();}
+function checkPin(){
+  const expectedPin = appMode==='dashboard' ? PIN_DASHBOARD : PIN_VENTAS;
+  if(pinBuffer===expectedPin){
+    if(appMode==='dashboard'){
+      window.location.href = 'dashboard.html';
+      return;
+    }
+    showScr('scr-pick');hideNav();
+  } else {
+    document.getElementById('pin-err').textContent='PIN incorrecto, intentá de nuevo';
+    pinBuffer='';updateDots();
+  }
+}
+function lockApp(){
+  currentLoc=null;employeeMode=false;appMode=null;
+  document.getElementById('scr-mode').classList.add('on');
+  showScr('scr-mode');
+}
 
 // ━━━ NAV ━━━
 function showScr(id){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById(id).classList.add('on');document.getElementById(id).scrollTop=0;}

@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v21';
+const CACHE = 'arcafe-v22';
 const FILES = [
   './index.html',
   './manifest.json',
@@ -20,7 +20,8 @@ const FILES = [
   './products/mate.jpg',
   './products/iced-latte.jpg',
   './products/americano-frio.jpg',
-  './products/frappe.jpg'
+  './products/frappe.jpg',
+  './splash-bg.jpg'
 ];
 
 // Install: cache all files, but don't let one missing file break the whole cache
