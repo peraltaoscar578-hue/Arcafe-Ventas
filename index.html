@@ -436,6 +436,7 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
         <button class="ditem" onclick="menuAct(()=>navTo('inventory'))"><div class="ditem-ico">📦</div>Inventario</button>
         <button class="ditem" onclick="menuAct(()=>navTo('report'))"><div class="ditem-ico">📊</div>Inf. de ventas</button>
         <button class="ditem" onclick="menuAct(()=>navTo('inv-report'))"><div class="ditem-ico">📋</div>Inf. de stock</button>
+        <button class="ditem" onclick="menuAct(openSyncDiagnostic)"><div class="ditem-ico">🔧</div>Estado de sincronización</button>
         <button class="ditem" onclick="menuAct(goBack)"><div class="ditem-ico">🔄</div>Cambiar local</button>
         <button class="ditem" onclick="menuAct(()=>document.getElementById('tut-bg').classList.add('on'))"><div class="ditem-ico">❓</div>Ayuda</button>
         <button class="ditem danger" onclick="menuAct(lockApp)"><div class="ditem-ico">🔒</div>Cerrar sesión</button>
@@ -644,6 +645,37 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
     <div id="close-fields"></div>
     <button class="m-save" onclick="confirmCierre()">Confirmar cierre</button>
     <button class="m-cancel" onclick="document.getElementById('close-modal-bg').classList.remove('on')">Cancelar</button>
+  </div>
+</div>
+
+<!-- DIAGNÓSTICO DE SYNC -->
+<div id="diag-bg" style="display:none;position:fixed;inset:0;z-index:600;align-items:center;justify-content:center;padding:1.5rem;background:rgba(0,0,0,.88)">
+  <div style="background:var(--ink2);border:1px solid var(--ga22);border-top:2px solid var(--gold);border-radius:var(--r-xl);padding:1.6rem 1.4rem;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.6)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <div style="width:36px;height:36px;border-radius:10px;background:var(--ga12);border:1px solid var(--ga22);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🔧</div>
+      <div>
+        <div style="font-family:'DM Serif Display',serif;font-size:19px;color:var(--gold2);letter-spacing:.03em;line-height:1">Sincronización</div>
+        <div style="font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cream3);margin-top:2px">Estado de la cola</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+      <div style="background:var(--ink3);border:1px solid rgba(255,255,255,.05);border-radius:var(--r);padding:12px">
+        <div style="font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cream3);margin-bottom:4px">Conexión</div>
+        <div id="diag-online" style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--cream)">—</div>
+      </div>
+      <div style="background:var(--ink3);border:1px solid rgba(255,255,255,.05);border-radius:var(--r);padding:12px">
+        <div style="font-size:8px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cream3);margin-bottom:4px">Pendientes</div>
+        <div id="diag-count" style="font-family:'DM Serif Display',serif;font-size:16px;color:var(--gold2)">—</div>
+      </div>
+    </div>
+
+    <div id="diag-list" style="display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;margin-bottom:14px"></div>
+
+    <button onclick="forceSyncNow()" style="width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--ink);border:none;border-radius:var(--r);padding:12px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">
+      ↻ Forzar sincronización ahora
+    </button>
+    <button onclick="document.getElementById('diag-bg').style.display='none'" style="display:block;margin:0 auto;background:transparent;border:none;color:var(--cream4);font-size:10px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.1em">Cerrar</button>
   </div>
 </div>
 
@@ -1844,6 +1876,50 @@ function downloadInvPDF(){
   const win=window.open(url,'_blank');if(win){win.onload=()=>{win.print();};}
   else{const a=document.createElement('a');a.href=url;a.download='Arcafe_Inventario_'+loc.replace(/ /g,'_')+'_'+now.toISOString().slice(0,10)+'.html';a.click();}
   setTimeout(()=>URL.revokeObjectURL(url),5000);
+}
+
+// ━━━ DIAGNÓSTICO DE SYNC ━━━
+async function openSyncDiagnostic(){
+  document.getElementById('diag-bg').style.display='flex';
+  await renderSyncDiagnostic();
+}
+
+async function renderSyncDiagnostic(){
+  const online = navigator.onLine;
+  document.getElementById('diag-online').textContent = online ? '🟢 Conectado' : '🔴 Sin señal';
+  document.getElementById('diag-online').style.color = online ? 'var(--green)' : 'var(--red)';
+
+  const queue = await idbGet('metadata','sync_queue') || [];
+  document.getElementById('diag-count').textContent = queue.length;
+
+  const listEl = document.getElementById('diag-list');
+  if(!queue.length){
+    listEl.innerHTML = '<p style="text-align:center;color:var(--cream3);font-size:11px;padding:1rem">Todo sincronizado ✓<br>No hay eventos pendientes.</p>';
+    return;
+  }
+
+  const entityLabels = {sale:'Venta', inventory_movement:'Movimiento', inventory_stock:'Stock', daily_session:'Turno'};
+  listEl.innerHTML = queue.map(ev=>{
+    const label = entityLabels[ev.entity] || ev.entity;
+    const detail = ev.payload?.product_name || ev.payload?.item_name || ev.payload?.location_id || '';
+    const time = ev.createdAt ? new Date(ev.createdAt).toLocaleString('es-BO',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}) : '';
+    const errBadge = ev.attempts > 0 ? `<div style="font-size:8px;color:var(--red);margin-top:2px">⚠ ${ev.attempts} intento(s) fallido(s)${ev.lastError ? ': '+ev.lastError.slice(0,60) : ''}</div>` : '';
+    return `<div style="background:var(--ink3);border:1px solid rgba(255,255,255,.05);border-radius:8px;padding:9px 11px">
+      <div style="display:flex;justify-content:space-between;gap:8px">
+        <div style="font-size:12px;color:var(--cream)">${label}${detail?' · '+detail:''}</div>
+        <div style="font-size:9px;color:var(--cream3);flex-shrink:0">${time}</div>
+      </div>
+      ${errBadge}
+    </div>`;
+  }).join('');
+}
+
+async function forceSyncNow(){
+  const btn = document.querySelector('#diag-bg button');
+  if(btn){ btn.textContent = 'Sincronizando…'; btn.style.opacity='.6'; }
+  await sync();
+  await renderSyncDiagnostic();
+  if(btn){ btn.textContent = '↻ Forzar sincronización ahora'; btn.style.opacity='1'; }
 }
 
 // ━━━ CALIBRACIÓN ━━━
