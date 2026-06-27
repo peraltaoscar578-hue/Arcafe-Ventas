@@ -1,4 +1,4 @@
-const CACHE = 'arcafe-v24';
+const CACHE = 'arcafe-v25';
 const FILES = [
   './index.html',
   './manifest.json',
