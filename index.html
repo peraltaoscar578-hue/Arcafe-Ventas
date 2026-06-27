@@ -675,6 +675,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--ink);color:var(--cream);-
     <button onclick="forceSyncNow()" style="width:100%;background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--ink);border:none;border-radius:var(--r);padding:12px 0;font-size:11px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px">
       ↻ Forzar sincronización ahora
     </button>
+    <button onclick="clearSyncQueue()" style="width:100%;background:var(--ra12);border:1px solid rgba(200,64,64,.3);color:var(--red);border-radius:var(--r);padding:11px 0;font-size:10px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:.1em;text-transform:uppercase;margin-bottom:8px">
+      🗑 Vaciar cola pendiente
+    </button>
     <button onclick="document.getElementById('diag-bg').style.display='none'" style="display:block;margin:0 auto;background:transparent;border:none;color:var(--cream4);font-size:10px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;text-transform:uppercase;letter-spacing:.1em">Cerrar</button>
   </div>
 </div>
@@ -951,8 +954,14 @@ async function processSyncEvent(event){
     await sbRequest('POST', 'sales', payload);
   } else if(entity === 'inventory_movement'){
     await sbRequest('POST', 'inventory_movements', payload);
+  } else if(entity === 'inventory_movement_batch'){
+    // payload is already an array of movement rows — one insert for all of them
+    await sbRequest('POST', 'inventory_movements', payload);
   } else if(entity === 'inventory_stock'){
     await sbRequest('POST', 'inventory_stock', [payload], '?on_conflict=location_id,item_id');
+  } else if(entity === 'inventory_stock_batch'){
+    // payload is already an array — one upsert request for all changed items
+    await sbRequest('POST', 'inventory_stock', payload, '?on_conflict=location_id,item_id');
   } else if(entity === 'daily_session'){
     await sbRequest('POST', 'daily_sessions', payload, '?on_conflict=location_id,date');
   }
@@ -995,6 +1004,26 @@ async function syncInventoryMovement(mov){
   if(navigator.onLine) sync();
 }
 
+// Batched variant: sends all ingredient movements from a single sale as one
+// array payload in one enqueue/sync cycle, instead of one event per ingredient.
+// This is the main fix for the queue overload — a Latte sale (café+leche+vaso+tapa)
+// used to create 4 separate Supabase calls; now it creates exactly 1.
+async function syncInventoryMovementBatch(movs){
+  if(!movs || !movs.length) return;
+  await enqueue('inventory_movement_batch','insert', movs.map(mov=>({
+    location_id:      mov.location || currentLoc,
+    item_id:          mov.itemId,
+    item_name:        mov.itemName,
+    type:             mov.type,
+    quantity:         mov.quantity,
+    previous_stock:   mov.previousStock,
+    new_stock:        mov.newStock,
+    reason:           mov.reason || '',
+    local_created_at: new Date(mov.timestamp || Date.now()).toISOString()
+  })));
+  if(navigator.onLine) sync();
+}
+
 async function syncInventoryStock(item){
   await enqueue('inventory_stock','upsert',{
     location_id: currentLoc,
@@ -1003,6 +1032,19 @@ async function syncInventoryStock(item){
     stock:       item.stock,
     updated_at:  new Date().toISOString()
   });
+  if(navigator.onLine) sync();
+}
+
+// Batched variant — sends multiple item stocks as a single upsert payload
+async function syncInventoryStockBatch(items){
+  if(!items || !items.length) return;
+  await enqueue('inventory_stock_batch','upsert', items.map(item=>({
+    location_id: currentLoc,
+    item_id:     item.id,
+    item_name:   item.name,
+    stock:       item.stock,
+    updated_at:  new Date().toISOString()
+  })));
   if(navigator.onLine) sync();
 }
 
@@ -1247,17 +1289,24 @@ function loadAll(){
   } else {
     inventory=defaultInv;
   }
-  recipes=storage.getRecipes();
+  recipes={...DEFAULT_RECIPES}; // always use current code-defined recipes, never a stale cached copy
   movements=storage.getMovements(currentLoc);
   const tk=new Date().toISOString().slice(0,10);
   session=(storage.getSessions(currentLoc))[tk]||null;
 }
 const saveP=()=>storage.saveProducts(products);
 const saveS=()=>storage.saveSales(currentLoc,sales);
-const saveI=()=>{
+const saveI=(changedIds=null)=>{
   storage.saveInventory(currentLoc,inventory);
-  // Sync each item stock to Supabase
-  if(inventory && currentLoc) inventory.forEach(item=>syncInventoryStock(item));
+  // Sync only the items that actually changed, and as ONE batched call —
+  // syncing the whole inventory item-by-item on every sale was the main
+  // source of queue overload (9-10 calls per sale just for stock).
+  if(inventory && currentLoc){
+    const targets = changedIds
+      ? inventory.filter(it=>changedIds.includes(it.id))
+      : inventory; // full sync used only for apertura/cierre/ajustes
+    if(targets.length) syncInventoryStockBatch(targets);
+  }
 };
 const saveM=()=>storage.saveMovements(currentLoc,movements);
 function saveSess(){
@@ -1445,12 +1494,16 @@ function getGramsForProduct(p){
   return p.grams;
 }
 const stockClass=item=>item.stock<=0?'critical':item.stock<item.minStock?'warn':'ok';
-function addMovement(type,itemId,delta,prev,next,reason){
+function addMovement(type,itemId,delta,prev,next,reason,batch=null){
   const item=inventory.find(i=>i.id===itemId);
   const mov={id:Date.now()+'_'+Math.random().toString(36).slice(2),type,itemId,itemName:item?item.name:itemId,quantity:delta,previousStock:prev,newStock:next,reason:reason||'',timestamp:Date.now(),location:currentLoc};
   movements.push(mov);
   saveM();
-  syncInventoryMovement(mov);
+  // Sale-type movements are batched per-sale (see applyChange) instead of
+  // syncing one Supabase event per ingredient — a single Latte sale used to
+  // generate 4+ separate movement events; now it generates exactly one.
+  if(batch){ batch.push(mov); }
+  else { syncInventoryMovement(mov); }
 }
 
 // ━━━ GROUP TABS ━━━
@@ -1578,14 +1631,17 @@ function applyChange(i,delta,tw){
     syncSale(saleRecord);
     const recipe=recipes[name]||[];
     const prod=products.find(p=>p.name===name);
+    const movBatch=[];
     recipe.forEach(({id,qty})=>{
       if(!tw&&(id==='vasos'||id==='tapas'))return;
       const item=inventory.find(it=>it.id===id);if(!item)return;
       // Use calibrated grams for café ingredient
       const actualQty=id==='cafe'?getGramsForProduct(prod):qty;
+      if(actualQty<=0)return; // skip ingredients with zero usage (e.g. Tucumana)
       const prev=item.stock;item.stock=Math.max(0,item.stock-actualQty);
-      addMovement('sale',id,-actualQty,prev,item.stock,'Venta'+(tw?' (llevar)':' (local)')+': '+name+(id==='cafe'&&calibGrams?' (cal.'+calibGrams+'g)':''));
+      addMovement('sale',id,-actualQty,prev,item.stock,'Venta'+(tw?' (llevar)':' (local)')+': '+name+(id==='cafe'&&calibGrams?' (cal.'+calibGrams+'g)':''),movBatch);
     });
+    if(movBatch.length) syncInventoryMovementBatch(movBatch);
     saveI(recipe.filter(({id})=>tw||(id!=='vasos'&&id!=='tapas')).map(({id})=>id));
   } else {
     const idx=sales.map((s,j)=>s.name===name?j:-1).filter(j=>j>=0).pop();
@@ -1594,14 +1650,17 @@ function applyChange(i,delta,tw){
       sales.splice(idx,1);
       const recipe=recipes[name]||[];
       const prodR=products.find(p=>p.name===name);
+      const movBatchR=[];
       recipe.forEach(({id,qty})=>{
         if(!wasTw&&(id==='vasos'||id==='tapas'))return;
         const item=inventory.find(it=>it.id===id);if(!item)return;
         // Revert with same calibrated amount that was deducted
         const actualQty=id==='cafe'?getGramsForProduct(prodR):qty;
+        if(actualQty<=0)return;
         const prev=item.stock;item.stock+=actualQty;
-        addMovement('adjustment',id,actualQty,prev,item.stock,'Venta revertida: '+name);
+        addMovement('adjustment',id,actualQty,prev,item.stock,'Venta revertida: '+name,movBatchR);
       });
+      if(movBatchR.length) syncInventoryMovementBatch(movBatchR);
       saveI(recipe.filter(({id})=>wasTw||(id!=='vasos'&&id!=='tapas')).map(({id})=>id));
     }
   }
@@ -1920,6 +1979,15 @@ async function forceSyncNow(){
   await sync();
   await renderSyncDiagnostic();
   if(btn){ btn.textContent = '↻ Forzar sincronización ahora'; btn.style.opacity='1'; }
+}
+
+async function clearSyncQueue(){
+  const queue = await idbGet('metadata','sync_queue') || [];
+  if(!queue.length){ alert('La cola ya está vacía.'); return; }
+  if(!confirm(`¿Vaciar ${queue.length} evento(s) pendiente(s)? Esto NO borra tus ventas ni tu inventario local — solo descarta lo que faltaba subir a Supabase.`)) return;
+  await idbSet('metadata','sync_queue', []);
+  await renderSyncDiagnostic();
+  alert('Cola vaciada ✓');
 }
 
 // ━━━ CALIBRACIÓN ━━━
