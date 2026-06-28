@@ -58,6 +58,44 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
 
 /* HISTORY CHART */
 .hist-chart-outer{background:var(--ink2);border:1px solid rgba(255,255,255,.05);border-radius:var(--r-lg);padding:16px 12px 10px;margin-bottom:1.25rem;overflow-x:auto}
+
+/* GASTOS */
+.gasto-form{background:var(--ink2);border:1px solid var(--ga22);border-radius:var(--r-lg);padding:18px;margin-bottom:1.5rem}
+.gasto-form-title{font-family:'DM Serif Display',serif;font-size:18px;color:var(--gold2);margin-bottom:14px}
+.gasto-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+@media(max-width:600px){.gasto-grid{grid-template-columns:1fr}}
+.gasto-fld{display:flex;flex-direction:column;gap:5px}
+.gasto-fld.full{grid-column:1/-1}
+.gasto-fld label{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cream3)}
+.gasto-fld input,.gasto-fld select{background:var(--ink3);border:1px solid rgba(255,255,255,.08);border-radius:var(--r);padding:10px 12px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px}
+.gasto-fld input:focus,.gasto-fld select:focus{outline:none;border-color:var(--gold)}
+.gasto-check{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--cream2);margin-bottom:14px}
+.gasto-check input{width:16px;height:16px;accent-color:var(--gold)}
+.gasto-submit{background:linear-gradient(135deg,var(--gold2),var(--gold));color:var(--ink);border:none;border-radius:var(--r);padding:12px 22px;font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;font-family:'DM Sans',sans-serif}
+.gasto-submit:active{transform:scale(.97)}
+
+.gasto-list{background:var(--ink2);border:1px solid rgba(255,255,255,.05);border-radius:var(--r-lg);overflow:hidden}
+.gasto-row{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.03)}
+.gasto-row:last-child{border-bottom:none}
+.gasto-cat-badge{font-size:8px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:6px;flex-shrink:0;white-space:nowrap}
+.gasto-info{flex:1;min-width:0}
+.gasto-desc{font-size:13px;color:var(--cream)}
+.gasto-meta{font-size:9px;color:var(--cream3);margin-top:2px}
+.gasto-amt{font-family:'DM Serif Display',serif;font-size:16px;color:var(--red);flex-shrink:0}
+.gasto-del{background:transparent;border:none;color:var(--cream4);font-size:14px;cursor:pointer;padding:4px;flex-shrink:0}
+.gasto-del:hover{color:var(--red)}
+
+/* P&L SUMMARY */
+.pl-box{background:var(--ink2);border:1px solid rgba(255,255,255,.05);border-radius:var(--r-lg);overflow:hidden;margin-bottom:1.25rem}
+.pl-row{display:flex;justify-content:space-between;align-items:center;padding:13px 18px;border-bottom:1px solid rgba(255,255,255,.04)}
+.pl-row:last-child{border-bottom:none}
+.pl-row.total{background:linear-gradient(135deg,rgba(200,168,75,.1),rgba(200,168,75,.03))}
+.pl-lbl{font-size:12px;color:var(--cream2)}
+.pl-row.total .pl-lbl{font-family:'DM Serif Display',serif;font-size:15px;color:var(--cream)}
+.pl-val{font-family:'DM Serif Display',serif;font-size:17px}
+.pl-val.pos{color:var(--green)}
+.pl-val.neg{color:var(--red)}
+.pl-val.gold{color:var(--gold2);font-size:22px}
 .hist-chart-row{display:flex;align-items:flex-end;gap:3px;height:140px;min-width:max-content;padding:0 4px;border-left:1px solid var(--ga12);border-bottom:1px solid var(--ga12)}
 .hist-bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:18px;flex:1}
 .hist-bar-v{font-size:8px;color:var(--gold2);font-weight:600;min-height:11px;white-space:nowrap}
@@ -165,6 +203,7 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
   <div class="view-tabs">
     <button class="view-tab on" id="vtab-live" onclick="switchView('live')">📡 En vivo — Hoy</button>
     <button class="view-tab" id="vtab-history" onclick="switchView('history')">📅 Historial Mensual</button>
+    <button class="view-tab" id="vtab-gastos" onclick="switchView('gastos')">💸 Gastos</button>
   </div>
 
   <div id="view-live">
@@ -244,6 +283,9 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
       </div>
     </div>
 
+    <div class="sec-title">Estado de Resultados</div>
+    <div class="pl-box" id="pl-box"><div class="loading-msg">Cargando…</div></div>
+
     <div class="sec-title">Ingresos por día</div>
     <div class="hist-chart-outer" id="hist-chart"><div class="loading-msg">Cargando…</div></div>
 
@@ -259,6 +301,80 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
     </div>
 
     <div class="updated-at" id="hist-updated-at">—</div>
+  </div>
+
+  <div id="view-gastos" style="display:none">
+    <div class="gasto-form">
+      <div class="gasto-form-title">Registrar un gasto</div>
+      <div class="gasto-grid">
+        <div class="gasto-fld">
+          <label>Local</label>
+          <select id="gasto-loc">
+            <option value="aeropuerto">✈️ Aeropuerto</option>
+            <option value="teleferico">🚡 Teleférico Morado</option>
+          </select>
+        </div>
+        <div class="gasto-fld">
+          <label>Categoría</label>
+          <select id="gasto-cat">
+            <option value="insumos">Insumos</option>
+            <option value="sueldos">Sueldos</option>
+            <option value="alquiler">Alquiler</option>
+            <option value="servicios">Servicios</option>
+            <option value="otros">Otros</option>
+          </select>
+        </div>
+        <div class="gasto-fld">
+          <label>Monto (Bs.)</label>
+          <input type="number" id="gasto-monto" min="0" step="0.01" placeholder="0.00"/>
+        </div>
+        <div class="gasto-fld">
+          <label>Fecha</label>
+          <input type="date" id="gasto-fecha"/>
+        </div>
+        <div class="gasto-fld full">
+          <label>Descripción (opcional)</label>
+          <input type="text" id="gasto-desc" placeholder="Ej: Compra de café en grano, 10kg"/>
+        </div>
+      </div>
+      <label class="gasto-check">
+        <input type="checkbox" id="gasto-recurrente"/>
+        Es un gasto recurrente (se repite todos los meses, ej: alquiler o sueldos)
+      </label>
+      <button class="gasto-submit" onclick="submitGasto()">+ Agregar gasto</button>
+    </div>
+
+    <div class="hist-controls">
+      <div class="hist-select-wrap">
+        <label class="hist-label">Mes</label>
+        <select id="gasto-month" class="hist-select" onchange="loadGastos()"></select>
+      </div>
+      <div class="hist-select-wrap">
+        <label class="hist-label">Año</label>
+        <select id="gasto-year" class="hist-select" onchange="loadGastos()"></select>
+      </div>
+      <div class="hist-loc-tabs">
+        <button class="hist-loc-tab on" id="gloc-combinado" onclick="switchGastoLoc('combinado')">Combinado</button>
+        <button class="hist-loc-tab" id="gloc-aeropuerto" onclick="switchGastoLoc('aeropuerto')">✈️ Aeropuerto</button>
+        <button class="hist-loc-tab" id="gloc-teleferico" onclick="switchGastoLoc('teleferico')">🚡 Teleférico</button>
+      </div>
+    </div>
+
+    <div id="recurrentes-banner" style="display:none"></div>
+
+    <div class="stats">
+      <div class="stat">
+        <div class="stat-lbl">Total gastado este mes</div>
+        <div class="stat-val" style="color:var(--red)" id="g-total">Bs. 0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Cantidad de gastos</div>
+        <div class="stat-val" id="g-count">0</div>
+      </div>
+    </div>
+
+    <div class="sec-title">Gastos del período</div>
+    <div class="gasto-list" id="gasto-list"><div class="loading-msg">Cargando…</div></div>
   </div>
 
 </div>
@@ -288,15 +404,44 @@ async function sbGet(table, query=''){
   return res.json();
 }
 
+async function sbPost(table, body){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer':        'return=minimal'
+    },
+    body: JSON.stringify(body)
+  });
+  if(!res.ok){ const err = await res.text(); throw new Error(`${table}: ${res.status} ${err}`); }
+}
+
+async function sbDelete(table, query){
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}${query}`, {
+    method: 'DELETE',
+    headers: {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Prefer':        'return=minimal'
+    }
+  });
+  if(!res.ok){ const err = await res.text(); throw new Error(`${table}: ${res.status} ${err}`); }
+}
+
 function switchView(view){
   currentView = view;
   document.getElementById('vtab-live').classList.toggle('on', view==='live');
   document.getElementById('vtab-history').classList.toggle('on', view==='history');
+  document.getElementById('vtab-gastos').classList.toggle('on', view==='gastos');
   document.getElementById('view-live').style.display = view==='live' ? 'block' : 'none';
   document.getElementById('view-history').style.display = view==='history' ? 'block' : 'none';
+  document.getElementById('view-gastos').style.display = view==='gastos' ? 'block' : 'none';
   document.querySelector('.loc-tabs').style.display = view==='live' ? 'flex' : 'none';
   if(view==='live') loadAll(true);
-  else loadHistory();
+  else if(view==='history') loadHistory();
+  else if(view==='gastos') loadGastos();
 }
 
 function switchHistLoc(loc){
@@ -307,21 +452,31 @@ function switchHistLoc(loc){
   loadHistory();
 }
 
+let currentGastoLoc = 'combinado';
+function switchGastoLoc(loc){
+  currentGastoLoc = loc;
+  ['combinado','aeropuerto','teleferico'].forEach(l=>{
+    document.getElementById('gloc-'+l).classList.toggle('on', l===loc);
+  });
+  loadGastos();
+}
+
 const MES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
 
 function populateHistSelectors(){
   const now = new Date();
-  const monthSel = document.getElementById('hist-month');
-  const yearSel  = document.getElementById('hist-year');
-
-  monthSel.innerHTML = MES_NOMBRES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
-  monthSel.value = now.getMonth();
-
-  const startYear = now.getFullYear() - 1;
-  const years = [];
-  for(let y=startYear; y<=now.getFullYear(); y++) years.push(y);
-  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-  yearSel.value = now.getFullYear();
+  [['hist-month','hist-year'],['gasto-month','gasto-year']].forEach(([mId,yId])=>{
+    const monthSel = document.getElementById(mId);
+    const yearSel  = document.getElementById(yId);
+    monthSel.innerHTML = MES_NOMBRES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+    monthSel.value = now.getMonth();
+    const startYear = now.getFullYear() - 1;
+    const years = [];
+    for(let y=startYear; y<=now.getFullYear(); y++) years.push(y);
+    yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    yearSel.value = now.getFullYear();
+  });
+  document.getElementById('gasto-fecha').value = now.toISOString().slice(0,10);
 }
 
 function todayRangeISO(){
@@ -499,16 +654,22 @@ async function loadHistory(){
   const year  = parseInt(document.getElementById('hist-year').value);
   const month = parseInt(document.getElementById('hist-month').value);
   const { start, end, daysInMonth } = monthRangeISO(year, month);
+  const dateStart = start.slice(0,10);
+  const dateEnd   = end.slice(0,10);
 
   document.getElementById('hist-period-lbl').textContent = `Ingresos de ${MES_NOMBRES[month]} ${year}`;
   document.getElementById('hist-chart').innerHTML = '<div class="loading-msg">Cargando…</div>';
   document.getElementById('hist-rank-list').innerHTML = '<div class="loading-msg">Cargando…</div>';
   document.getElementById('hist-loc-summary').innerHTML = '<div class="loading-msg">Cargando…</div>';
+  document.getElementById('pl-box').innerHTML = '<div class="loading-msg">Cargando…</div>';
 
   try {
     const locFilter = currentHistLoc === 'combinado' ? '' : `&location_id=eq.${currentHistLoc}`;
     const sales = await sbGet('sales',
       `?and=(local_created_at.gte.${start},local_created_at.lte.${end})&deleted_at=is.null${locFilter}&order=local_created_at.asc&limit=5000`
+    );
+    const gastos = await sbGet('gastos',
+      `?and=(fecha.gte.${dateStart},fecha.lte.${dateEnd})${locFilter}&order=fecha.asc&limit=2000`
     );
 
     const totalBs    = sales.reduce((s,r)=> s + (Number(r.price)||0), 0);
@@ -521,6 +682,26 @@ async function loadHistory(){
     document.getElementById('h-total').textContent = 'Bs. ' + totalBs.toFixed(2);
     document.getElementById('h-units').textContent = totalUnits;
     document.getElementById('h-avg').textContent   = 'Bs. ' + avgPerDay.toFixed(2);
+
+    // ── Estado de Resultados — gastos agrupados por categoría ──
+    const totalGastos = gastos.reduce((s,g)=> s + (Number(g.monto)||0), 0);
+    const byCat = {};
+    gastos.forEach(g=>{
+      const cat = g.categoria || 'otros';
+      byCat[cat] = (byCat[cat]||0) + (Number(g.monto)||0);
+    });
+    const catLabels = { insumos:'Insumos', sueldos:'Sueldos', alquiler:'Alquiler', servicios:'Servicios', otros:'Otros' };
+    const utilidad = totalBs - totalGastos;
+
+    let plHtml = `<div class="pl-row"><div class="pl-lbl">Ingresos por ventas</div><div class="pl-val pos">+ Bs. ${totalBs.toFixed(2)}</div></div>`;
+    Object.entries(byCat).forEach(([cat,monto])=>{
+      plHtml += `<div class="pl-row"><div class="pl-lbl">${catLabels[cat]||cat}</div><div class="pl-val neg">− Bs. ${monto.toFixed(2)}</div></div>`;
+    });
+    if(!gastos.length){
+      plHtml += `<div class="pl-row"><div class="pl-lbl" style="color:var(--cream3)">Sin gastos registrados este mes</div></div>`;
+    }
+    plHtml += `<div class="pl-row total"><div class="pl-lbl">Utilidad ${utilidad>=0?'Neta':'(Pérdida)'}</div><div class="pl-val gold" style="color:${utilidad>=0?'var(--green)':'var(--red)'}">Bs. ${utilidad.toFixed(2)}</div></div>`;
+    document.getElementById('pl-box').innerHTML = plHtml;
 
     // ── Daily aggregation for the chart ──
     const dailyTotals = {}; // day number -> Bs
@@ -618,6 +799,165 @@ function renderHistChart(dailyTotals, daysInMonth, todayDay){
 populateHistSelectors();
 loadAll(true);
 startAutoRefresh();
+
+// ━━━ GASTOS ━━━
+const CAT_LABELS = { insumos:'Insumos', sueldos:'Sueldos', alquiler:'Alquiler', servicios:'Servicios', otros:'Otros' };
+const CAT_COLORS = { insumos:'#3a8840', sueldos:'#c8a84b', alquiler:'#c84040', servicios:'#2a7a9a', otros:'#7a6840' };
+
+async function loadGastos(){
+  const year  = parseInt(document.getElementById('gasto-year').value);
+  const month = parseInt(document.getElementById('gasto-month').value);
+  const { start, end } = monthRangeISO(year, month);
+  const dateStart = start.slice(0,10);
+  const dateEnd   = end.slice(0,10);
+
+  document.getElementById('gasto-list').innerHTML = '<div class="loading-msg">Cargando…</div>';
+
+  try {
+    const locFilter = currentGastoLoc === 'combinado' ? '' : `&location_id=eq.${currentGastoLoc}`;
+    const gastos = await sbGet('gastos',
+      `?and=(fecha.gte.${dateStart},fecha.lte.${dateEnd})${locFilter}&order=fecha.desc&limit=2000`
+    );
+
+    const total = gastos.reduce((s,g)=> s + (Number(g.monto)||0), 0);
+    document.getElementById('g-total').textContent = 'Bs. ' + total.toFixed(2);
+    document.getElementById('g-count').textContent  = gastos.length;
+
+    const listEl = document.getElementById('gasto-list');
+    const locNames = { aeropuerto:'✈️ Aeropuerto', teleferico:'🚡 Teleférico' };
+    if(!gastos.length){
+      listEl.innerHTML = `<div class="empty-msg"><b>Sin gastos este mes</b>Registrá el primero usando el formulario de arriba</div>`;
+    } else {
+      listEl.innerHTML = gastos.map(g=>{
+        const cat = g.categoria || 'otros';
+        const color = CAT_COLORS[cat] || '#888';
+        const fecha = g.fecha ? new Date(g.fecha+'T00:00:00').toLocaleDateString('es-BO',{day:'2-digit',month:'short'}) : '';
+        return `<div class="gasto-row">
+          <div class="gasto-cat-badge" style="background:${color}22;color:${color}">${CAT_LABELS[cat]||cat}</div>
+          <div class="gasto-info">
+            <div class="gasto-desc">${g.descripcion || CAT_LABELS[cat]||cat}${g.recurrente?' 🔁':''}</div>
+            <div class="gasto-meta">${fecha} · ${locNames[g.location_id]||g.location_id}</div>
+          </div>
+          <div class="gasto-amt">Bs. ${Number(g.monto).toFixed(2)}</div>
+          <button class="gasto-del" onclick="deleteGasto('${g.id}')" title="Eliminar">✕</button>
+        </div>`;
+      }).join('');
+    }
+
+    checkRecurrentes(year, month);
+
+  } catch(e){
+    console.warn('[Dashboard] gastos load error', e);
+    document.getElementById('gasto-list').innerHTML = `<div class="empty-msg"><b>Error al cargar</b>${e.message}</div>`;
+  }
+}
+
+async function submitGasto(){
+  const loc    = document.getElementById('gasto-loc').value;
+  const cat    = document.getElementById('gasto-cat').value;
+  const monto  = parseFloat(document.getElementById('gasto-monto').value);
+  const fecha  = document.getElementById('gasto-fecha').value;
+  const desc   = document.getElementById('gasto-desc').value.trim();
+  const recurrente = document.getElementById('gasto-recurrente').checked;
+
+  if(!monto || monto <= 0){ alert('Ingresá un monto válido.'); return; }
+  if(!fecha){ alert('Elegí una fecha.'); return; }
+
+  try {
+    await sbPost('gastos', {
+      location_id: loc,
+      categoria: cat,
+      descripcion: desc || null,
+      monto: monto,
+      fecha: fecha,
+      recurrente: recurrente
+    });
+    document.getElementById('gasto-monto').value = '';
+    document.getElementById('gasto-desc').value = '';
+    document.getElementById('gasto-recurrente').checked = false;
+    loadGastos();
+  } catch(e){
+    alert('Error al guardar el gasto: ' + e.message);
+  }
+}
+
+async function deleteGasto(id){
+  if(!confirm('¿Eliminar este gasto?')) return;
+  try {
+    await sbDelete('gastos', `?id=eq.${id}`);
+    loadGastos();
+  } catch(e){
+    alert('Error al eliminar: ' + e.message);
+  }
+}
+
+// Si el mes elegido no tiene gastos recurrentes propios pero el mes anterior sí,
+// ofrece clonarlos con un clic — nunca se duplican solos sin que el usuario lo vea.
+async function checkRecurrentes(year, month){
+  const banner = document.getElementById('recurrentes-banner');
+  banner.style.display = 'none';
+
+  let prevYear = year, prevMonth = month - 1;
+  if(prevMonth < 0){ prevMonth = 11; prevYear -= 1; }
+
+  const { start: curStart, end: curEnd } = monthRangeISO(year, month);
+  const { start: prevStart, end: prevEnd } = monthRangeISO(prevYear, prevMonth);
+
+  try {
+    const locFilter = currentGastoLoc === 'combinado' ? '' : `&location_id=eq.${currentGastoLoc}`;
+    const curRecurrentes = await sbGet('gastos',
+      `?recurrente=eq.true&and=(fecha.gte.${curStart.slice(0,10)},fecha.lte.${curEnd.slice(0,10)})${locFilter}&limit=200`
+    );
+    if(curRecurrentes.length) return; // ya están cargados este mes
+
+    const prevRecurrentes = await sbGet('gastos',
+      `?recurrente=eq.true&and=(fecha.gte.${prevStart.slice(0,10)},fecha.lte.${prevEnd.slice(0,10)})${locFilter}&limit=200`
+    );
+    if(!prevRecurrentes.length) return;
+
+    const totalPrev = prevRecurrentes.reduce((s,g)=>s+(Number(g.monto)||0),0);
+    banner.style.display = 'block';
+    banner.innerHTML = `<div class="pl-box" style="margin-bottom:1rem">
+      <div class="pl-row" style="align-items:center">
+        <div class="pl-lbl">🔁 Hay ${prevRecurrentes.length} gasto(s) recurrente(s) de ${MES_NOMBRES[prevMonth]} (Bs. ${totalPrev.toFixed(2)}) que no se cargaron este mes.</div>
+      </div>
+      <div class="pl-row">
+        <button class="gasto-submit" style="font-size:10px;padding:9px 16px" onclick="cloneRecurrentes(${year},${month})">Copiar al mes actual</button>
+      </div>
+    </div>`;
+  } catch(e){
+    console.warn('[Dashboard] checkRecurrentes error', e);
+  }
+}
+
+async function cloneRecurrentes(year, month){
+  let prevYear = year, prevMonth = month - 1;
+  if(prevMonth < 0){ prevMonth = 11; prevYear -= 1; }
+  const { start: prevStart, end: prevEnd } = monthRangeISO(prevYear, prevMonth);
+  const { start: curStart } = monthRangeISO(year, month);
+  const newDay = curStart.slice(0,10); // primer día del mes actual
+
+  try {
+    const locFilter = currentGastoLoc === 'combinado' ? '' : `&location_id=eq.${currentGastoLoc}`;
+    const prevRecurrentes = await sbGet('gastos',
+      `?recurrente=eq.true&and=(fecha.gte.${prevStart.slice(0,10)},fecha.lte.${prevEnd.slice(0,10)})${locFilter}&limit=200`
+    );
+    for(const g of prevRecurrentes){
+      await sbPost('gastos', {
+        location_id: g.location_id,
+        categoria: g.categoria,
+        descripcion: g.descripcion,
+        monto: g.monto,
+        fecha: newDay,
+        recurrente: true
+      });
+    }
+    document.getElementById('recurrentes-banner').style.display = 'none';
+    loadGastos();
+  } catch(e){
+    alert('Error al copiar gastos recurrentes: ' + e.message);
+  }
+}
 </script>
 </body>
 </html>
