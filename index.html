@@ -1180,6 +1180,7 @@ function checkPin(){
 }
 function lockApp(){
   currentLoc=null;employeeMode=false;appMode=null;
+  hideNav();
   document.getElementById('scr-mode').classList.add('on');
   showScr('scr-mode');
 }
