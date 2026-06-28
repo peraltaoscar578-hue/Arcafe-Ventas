@@ -40,6 +40,31 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
 .loc-tab.on .loc-tab-name{color:var(--gold2)}
 .loc-tab-sub{font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--cream3);margin-top:3px}
 
+/* VIEW TABS — Live vs History */
+.view-tabs{display:flex;gap:6px;margin-bottom:1.25rem;background:var(--ink2);border:1px solid rgba(255,255,255,.05);border-radius:var(--r-lg);padding:4px}
+.view-tab{flex:1;background:transparent;border:none;border-radius:10px;padding:10px 14px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--cream3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s}
+.view-tab.on{background:linear-gradient(135deg,rgba(200,168,75,.2),rgba(200,168,75,.08));color:var(--gold2)}
+
+/* HISTORY CONTROLS */
+.hist-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.5rem}
+.hist-select-wrap{display:flex;flex-direction:column;gap:5px}
+.hist-label{font-size:9px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--cream3)}
+.hist-select{background:var(--ink2);border:1px solid var(--ga22);border-radius:var(--r);padding:10px 14px;color:var(--cream);font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;cursor:pointer;min-width:130px}
+.hist-select:focus{outline:none;border-color:var(--gold)}
+.hist-loc-tabs{display:flex;gap:6px;margin-left:auto}
+.hist-loc-tab{background:var(--ink2);border:1.5px solid rgba(255,255,255,.06);border-radius:var(--r);padding:10px 14px;font-size:11px;font-weight:700;color:var(--cream3);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .15s;white-space:nowrap}
+.hist-loc-tab.on{border-color:var(--ga35);background:linear-gradient(135deg,rgba(200,168,75,.14),rgba(200,168,75,.05));color:var(--gold2)}
+@media(max-width:700px){.hist-controls{flex-direction:column;align-items:stretch}.hist-loc-tabs{margin-left:0}}
+
+/* HISTORY CHART */
+.hist-chart-outer{background:var(--ink2);border:1px solid rgba(255,255,255,.05);border-radius:var(--r-lg);padding:16px 12px 10px;margin-bottom:1.25rem;overflow-x:auto}
+.hist-chart-row{display:flex;align-items:flex-end;gap:3px;height:140px;min-width:max-content;padding:0 4px;border-left:1px solid var(--ga12);border-bottom:1px solid var(--ga12)}
+.hist-bar-col{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:18px;flex:1}
+.hist-bar-v{font-size:8px;color:var(--gold2);font-weight:600;min-height:11px;white-space:nowrap}
+.hist-bar{width:100%;max-width:22px;border-radius:3px 3px 0 0;background:linear-gradient(180deg,var(--gold2),var(--gold));min-height:2px}
+.hist-bar.today{background:linear-gradient(180deg,#fff,var(--gold2));box-shadow:0 0 8px rgba(200,168,75,.5)}
+.hist-bar-lbl{font-size:8px;color:var(--cream3)}
+
 /* SESSION BANNER */
 .sess-banner{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:14px 18px;border-radius:var(--r-lg);margin-bottom:1.25rem;flex-wrap:wrap}
 .sess-banner.open{background:var(--ga-g);border:1px solid rgba(58,136,64,.28)}
@@ -137,44 +162,104 @@ header{display:flex;align-items:center;justify-content:space-between;flex-wrap:w
     </div>
   </div>
 
-  <div id="sess-banner" class="sess-banner none">
-    <div><div class="sess-status">Cargando turno…</div></div>
+  <div class="view-tabs">
+    <button class="view-tab on" id="vtab-live" onclick="switchView('live')">📡 En vivo — Hoy</button>
+    <button class="view-tab" id="vtab-history" onclick="switchView('history')">📅 Historial Mensual</button>
   </div>
 
-  <div class="stats">
-    <div class="stat gold">
-      <div class="stat-lbl">Total del día</div>
-      <div class="stat-val g" id="s-total">Bs. 0.00</div>
+  <div id="view-live">
+    <div id="sess-banner" class="sess-banner none">
+      <div><div class="sess-status">Cargando turno…</div></div>
     </div>
-    <div class="stat">
-      <div class="stat-lbl">Unidades vendidas</div>
-      <div class="stat-val" id="s-units">0</div>
+
+    <div class="stats">
+      <div class="stat gold">
+        <div class="stat-lbl">Total del día</div>
+        <div class="stat-val g" id="s-total">Bs. 0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Unidades vendidas</div>
+        <div class="stat-val" id="s-units">0</div>
+      </div>
+      <div class="stat grn">
+        <div class="stat-lbl">Café utilizado</div>
+        <div class="stat-val gr" id="s-grams">0 g</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Más vendido</div>
+        <div class="stat-val sm" id="s-top">—</div>
+      </div>
     </div>
-    <div class="stat grn">
-      <div class="stat-lbl">Café utilizado</div>
-      <div class="stat-val gr" id="s-grams">0 g</div>
+
+    <div class="grid-2">
+      <div>
+        <div class="sec-title">Ranking de productos hoy</div>
+        <div class="rank-list" id="rank-list"><div class="loading-msg">Cargando…</div></div>
+      </div>
+      <div>
+        <div class="sec-title">Stock actual</div>
+        <div class="stk-list" id="stk-list"><div class="loading-msg">Cargando…</div></div>
+      </div>
     </div>
-    <div class="stat">
-      <div class="stat-lbl">Más vendido</div>
-      <div class="stat-val sm" id="s-top">—</div>
-    </div>
+
+    <div class="sec-title">Movimientos recientes</div>
+    <div class="mov-list" id="mov-list"><div class="loading-msg">Cargando…</div></div>
+
+    <div class="updated-at" id="updated-at">—</div>
   </div>
 
-  <div class="grid-2">
-    <div>
-      <div class="sec-title">Ranking de productos hoy</div>
-      <div class="rank-list" id="rank-list"><div class="loading-msg">Cargando…</div></div>
+  <div id="view-history" style="display:none">
+    <div class="hist-controls">
+      <div class="hist-select-wrap">
+        <label class="hist-label">Mes</label>
+        <select id="hist-month" class="hist-select" onchange="loadHistory()"></select>
+      </div>
+      <div class="hist-select-wrap">
+        <label class="hist-label">Año</label>
+        <select id="hist-year" class="hist-select" onchange="loadHistory()"></select>
+      </div>
+      <div class="hist-loc-tabs">
+        <button class="hist-loc-tab on" id="hloc-combinado" onclick="switchHistLoc('combinado')">Combinado</button>
+        <button class="hist-loc-tab" id="hloc-aeropuerto" onclick="switchHistLoc('aeropuerto')">✈️ Aeropuerto</button>
+        <button class="hist-loc-tab" id="hloc-teleferico" onclick="switchHistLoc('teleferico')">🚡 Teleférico</button>
+      </div>
     </div>
-    <div>
-      <div class="sec-title">Stock actual</div>
-      <div class="stk-list" id="stk-list"><div class="loading-msg">Cargando…</div></div>
+
+    <div class="stats">
+      <div class="stat gold">
+        <div class="stat-lbl" id="hist-period-lbl">Ingresos del mes</div>
+        <div class="stat-val g" id="h-total">Bs. 0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Unidades vendidas</div>
+        <div class="stat-val" id="h-units">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Promedio diario</div>
+        <div class="stat-val sm" id="h-avg">Bs. 0.00</div>
+      </div>
+      <div class="stat">
+        <div class="stat-lbl">Mejor día</div>
+        <div class="stat-val sm" id="h-bestday">—</div>
+      </div>
     </div>
+
+    <div class="sec-title">Ingresos por día</div>
+    <div class="hist-chart-outer" id="hist-chart"><div class="loading-msg">Cargando…</div></div>
+
+    <div class="grid-2">
+      <div>
+        <div class="sec-title">Ranking de productos del mes</div>
+        <div class="rank-list" id="hist-rank-list"><div class="loading-msg">Cargando…</div></div>
+      </div>
+      <div>
+        <div class="sec-title">Resumen por local</div>
+        <div class="stk-list" id="hist-loc-summary"><div class="loading-msg">Cargando…</div></div>
+      </div>
+    </div>
+
+    <div class="updated-at" id="hist-updated-at">—</div>
   </div>
-
-  <div class="sec-title">Movimientos recientes</div>
-  <div class="mov-list" id="mov-list"><div class="loading-msg">Cargando…</div></div>
-
-  <div class="updated-at" id="updated-at">—</div>
 
 </div>
 
@@ -187,6 +272,8 @@ const MOV_LABELS = {sale:'Venta',restock:'Reposición',adjustment:'Ajuste',waste
 const MOV_COLORS = {sale:'#c84040',restock:'#3a8840',adjustment:'#c8a84b',waste:'#c87820',damage:'#c84040',opening:'#3a8840',closing:'#c8a84b'};
 
 let currentLoc = 'aeropuerto';
+let currentView = 'live';
+let currentHistLoc = 'combinado';
 let refreshTimer = null;
 
 async function sbGet(table, query=''){
@@ -199,6 +286,42 @@ async function sbGet(table, query=''){
   });
   if(!res.ok) throw new Error(`${table}: ${res.status}`);
   return res.json();
+}
+
+function switchView(view){
+  currentView = view;
+  document.getElementById('vtab-live').classList.toggle('on', view==='live');
+  document.getElementById('vtab-history').classList.toggle('on', view==='history');
+  document.getElementById('view-live').style.display = view==='live' ? 'block' : 'none';
+  document.getElementById('view-history').style.display = view==='history' ? 'block' : 'none';
+  document.querySelector('.loc-tabs').style.display = view==='live' ? 'flex' : 'none';
+  if(view==='live') loadAll(true);
+  else loadHistory();
+}
+
+function switchHistLoc(loc){
+  currentHistLoc = loc;
+  ['combinado','aeropuerto','teleferico'].forEach(l=>{
+    document.getElementById('hloc-'+l).classList.toggle('on', l===loc);
+  });
+  loadHistory();
+}
+
+const MES_NOMBRES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+function populateHistSelectors(){
+  const now = new Date();
+  const monthSel = document.getElementById('hist-month');
+  const yearSel  = document.getElementById('hist-year');
+
+  monthSel.innerHTML = MES_NOMBRES.map((m,i)=>`<option value="${i}">${m}</option>`).join('');
+  monthSel.value = now.getMonth();
+
+  const startYear = now.getFullYear() - 1;
+  const years = [];
+  for(let y=startYear; y<=now.getFullYear(); y++) years.push(y);
+  yearSel.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  yearSel.value = now.getFullYear();
 }
 
 function todayRangeISO(){
@@ -361,9 +484,138 @@ async function loadAll(manual){
 
 function startAutoRefresh(){
   if(refreshTimer) clearInterval(refreshTimer);
-  refreshTimer = setInterval(()=> loadAll(false), 30000);
+  refreshTimer = setInterval(()=>{ if(currentView==='live') loadAll(false); }, 30000);
 }
 
+// ━━━ HISTORIAL MENSUAL ━━━
+function monthRangeISO(year, month){
+  // month is 0-indexed (0=Enero). Local midnight boundaries → UTC ISO.
+  const start = new Date(year, month, 1, 0, 0, 0, 0);
+  const end   = new Date(year, month + 1, 0, 23, 59, 59, 999); // last day of month
+  return { start: start.toISOString(), end: end.toISOString(), daysInMonth: end.getDate() };
+}
+
+async function loadHistory(){
+  const year  = parseInt(document.getElementById('hist-year').value);
+  const month = parseInt(document.getElementById('hist-month').value);
+  const { start, end, daysInMonth } = monthRangeISO(year, month);
+
+  document.getElementById('hist-period-lbl').textContent = `Ingresos de ${MES_NOMBRES[month]} ${year}`;
+  document.getElementById('hist-chart').innerHTML = '<div class="loading-msg">Cargando…</div>';
+  document.getElementById('hist-rank-list').innerHTML = '<div class="loading-msg">Cargando…</div>';
+  document.getElementById('hist-loc-summary').innerHTML = '<div class="loading-msg">Cargando…</div>';
+
+  try {
+    const locFilter = currentHistLoc === 'combinado' ? '' : `&location_id=eq.${currentHistLoc}`;
+    const sales = await sbGet('sales',
+      `?and=(local_created_at.gte.${start},local_created_at.lte.${end})&deleted_at=is.null${locFilter}&order=local_created_at.asc&limit=5000`
+    );
+
+    const totalBs    = sales.reduce((s,r)=> s + (Number(r.price)||0), 0);
+    const totalUnits = sales.length;
+    const today       = new Date();
+    const isCurrentMonth = today.getFullYear()===year && today.getMonth()===month;
+    const elapsedDays = isCurrentMonth ? today.getDate() : daysInMonth;
+    const avgPerDay   = elapsedDays > 0 ? totalBs / elapsedDays : 0;
+
+    document.getElementById('h-total').textContent = 'Bs. ' + totalBs.toFixed(2);
+    document.getElementById('h-units').textContent = totalUnits;
+    document.getElementById('h-avg').textContent   = 'Bs. ' + avgPerDay.toFixed(2);
+
+    // ── Daily aggregation for the chart ──
+    const dailyTotals = {}; // day number -> Bs
+    sales.forEach(r=>{
+      const d = new Date(r.local_created_at);
+      const day = d.getDate();
+      dailyTotals[day] = (dailyTotals[day]||0) + (Number(r.price)||0);
+    });
+
+    const dayNumbers = Object.keys(dailyTotals).map(Number);
+    let bestDay = null, bestVal = 0;
+    dayNumbers.forEach(d=>{ if(dailyTotals[d] > bestVal){ bestVal = dailyTotals[d]; bestDay = d; } });
+    document.getElementById('h-bestday').textContent = bestDay
+      ? `Día ${bestDay} · Bs.${bestVal.toFixed(0)}`
+      : '—';
+
+    renderHistChart(dailyTotals, daysInMonth, isCurrentMonth ? today.getDate() : null);
+
+    // ── Product ranking for the month ──
+    const byProduct = {};
+    sales.forEach(r=>{
+      const name = r.product_name || '—';
+      if(!byProduct[name]) byProduct[name] = { count:0, bs:0 };
+      byProduct[name].count++;
+      byProduct[name].bs += Number(r.price)||0;
+    });
+    const ranked = Object.entries(byProduct).map(([name,v])=>({name,...v})).sort((a,b)=>b.count-a.count);
+    const rankEl = document.getElementById('hist-rank-list');
+    if(!ranked.length){
+      rankEl.innerHTML = `<div class="empty-msg"><b>Sin ventas este mes</b>No hay datos para el período elegido</div>`;
+    } else {
+      const maxCount = ranked[0].count;
+      rankEl.innerHTML = ranked.slice(0,12).map((r,i)=>`
+        <div class="rank-row">
+          <div class="rank-n">${i+1}</div>
+          <div class="rank-bar-wrap">
+            <div class="rank-name"><span>${r.name}</span><b>${r.count} · Bs.${r.bs.toFixed(0)}</b></div>
+            <div class="rank-bar-bg"><div class="rank-bar-fill" style="width:${Math.max(4,(r.count/maxCount)*100)}%"></div></div>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // ── Per-location summary (only meaningful in "combinado" view) ──
+    const summaryEl = document.getElementById('hist-loc-summary');
+    if(currentHistLoc === 'combinado'){
+      const byLoc = {};
+      sales.forEach(r=>{
+        const loc = r.location_id || '—';
+        if(!byLoc[loc]) byLoc[loc] = { units:0, bs:0 };
+        byLoc[loc].units++;
+        byLoc[loc].bs += Number(r.price)||0;
+      });
+      const locNames = { aeropuerto:'✈️ Aeropuerto', teleferico:'🚡 Teleférico Morado' };
+      const entries = Object.entries(byLoc);
+      summaryEl.innerHTML = entries.length ? entries.map(([loc,v])=>`
+        <div class="stk-row">
+          <div class="stk-name">${locNames[loc]||loc}</div>
+          <div class="stk-r"><div class="stk-val ok">Bs. ${v.bs.toFixed(2)}</div><div class="stk-min">${v.units} unidades</div></div>
+        </div>
+      `).join('') : `<div class="empty-msg"><b>Sin datos</b></div>`;
+    } else {
+      summaryEl.innerHTML = `<div class="empty-msg"><b>Vista de un solo local</b>Elegí "Combinado" para ver el desglose por local</div>`;
+    }
+
+    document.getElementById('hist-updated-at').textContent =
+      'Última actualización: ' + new Date().toLocaleTimeString('es-BO',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+
+  } catch(e){
+    console.warn('[Dashboard] history load error', e);
+    document.getElementById('hist-chart').innerHTML = `<div class="empty-msg"><b>Error al cargar</b>${e.message}</div>`;
+  }
+}
+
+function renderHistChart(dailyTotals, daysInMonth, todayDay){
+  const values = Object.values(dailyTotals);
+  const maxVal = values.length ? Math.max(...values) : 1;
+  let bars = '';
+  for(let day=1; day<=daysInMonth; day++){
+    const val = dailyTotals[day] || 0;
+    const h = val > 0 ? Math.max(3, Math.round((val/maxVal)*120)) : 0;
+    const isToday = day === todayDay;
+    bars += `<div class="hist-bar-col">
+      <div class="hist-bar-v">${val>0 ? Math.round(val) : ''}</div>
+      <div class="hist-bar${isToday?' today':''}" style="height:${h}px"></div>
+      <div class="hist-bar-lbl">${day}</div>
+    </div>`;
+  }
+  document.getElementById('hist-chart').innerHTML =
+    values.length
+      ? `<div class="hist-chart-row">${bars}</div>`
+      : `<div class="empty-msg"><b>Sin ventas este mes</b>No hay datos para mostrar en el gráfico</div>`;
+}
+
+populateHistSelectors();
 loadAll(true);
 startAutoRefresh();
 </script>
